@@ -10,26 +10,26 @@ game = {
 
 	"scenes": [
 		{
-			"title": "Scene 1",
+			"title": "Mami",
 			"buttons": [
-				("Go to scene 2", 2),
-				("Go to scene 3", 3)
+				["Papi", 2],
+				["Schnupps", 3]
 			]
 		},
 
 		{
-			"title": "Scene 2",
+			"title": "Papi",
 			"buttons": [
-				("Go to scene 1", 1),
-				("Go to scene 3", 3)
+				["Go to scene 1", 1],
+				["Go to scene 3", 3]
 			]
 		},
 
 		{
-			"title": "Scene 3",
+			"title": "Schnuppi",
 			"buttons": [
-				("Go to scene 1", 1),
-				("Go to scene 2", 2)
+				["Go to scene 1", 1],
+				["Go to scene 2", 2]
 			]
 		}
 	]

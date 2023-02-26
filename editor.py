@@ -1,5 +1,8 @@
+import json
 import os
 import sys
+import copy
+import time
 
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
@@ -10,7 +13,8 @@ class Creator(QMainWindow):
 	def __init__(self):
 		super().__init__()
 		self.build_ui()
-		self.w = None # no extra window yet
+		self.w = None  # no extra window yet
+
 	def build_ui(self):
 		self.setWindowTitle("CrystalStudio Editor")
 
@@ -77,7 +81,6 @@ class Creator(QMainWindow):
 		layout.addWidget(checkbox, 2, 2)
 		layout.addWidget(btn, 3, 2)
 
-
 		self.np_dlg.setLayout(layout)
 
 		self.np_dlg.setFixedSize(int(960 / 2), int(540 / 2))
@@ -88,8 +91,10 @@ class Creator(QMainWindow):
 		checkbox.toggled.connect(input_out.setEnabled)
 
 		self.np_dlg.exec()
+
 	def open_project_fnc(self):
 		print("Coming soon!")
+
 	def create_project(self, name, author, out):
 		if name:
 			if author:
@@ -121,14 +126,35 @@ class Creator(QMainWindow):
 			print("ERROR:", err, "| Please pick a different name.")
 			sys.exit(1)
 
+
 class Editor(QWidget):
-	def __init__(self, name, author, out):
+	def __init__(self, name: str, author: str, out: str):
 		super().__init__()
 
 		self.name = name
 		self.author = author
 		self.out = out
 		self.scene = 0
+
+		try:
+			file = open(f"editor/{name}/save.json", "r")
+			self.mem_data = json.load(file)
+			file.close()
+		except FileNotFoundError:
+			file = open(f"editor/{name}/save.json", "w")
+
+			self.mem_data = {
+				"info": {"name": name, "authors": author.split(", "), "out": "out/", "editor": {"current_scene": 0}},
+				"scenes": [{"title": "Scene 1", "buttons": [["Go to scene 2", 2], ["Go to scene 3", 3]]},
+						   {"title": "Scene 2", "buttons": [["Go to scene 1", 1], ["Go to scene 3", 3]]},
+						   {"title": "Scene 3", "buttons": [["Go to scene 1", 1], ["Go to scene 2", 2]]}
+						   ]
+				}
+
+			json.dump(self.mem_data, file)
+			file.close()
+
+		self.save_file = open(f"editor/{name}/save.json", "r")
 
 		self.build_ui()
 
@@ -139,6 +165,7 @@ class Editor(QWidget):
 		labels = []
 		lists = []
 		buttons = []
+		titles = []
 
 		add_scene_btn = QPushButton(self)
 		add_scene_btn.setText("+")
@@ -149,20 +176,23 @@ class Editor(QWidget):
 		build_btn = QPushButton(self)
 		build_btn.setText("Build game")
 
-		save_btn = QPushButton(self)
-		save_btn.setText("Save")
+		self.save_btn = QPushButton(self)
+		self.save_btn.setText("Save")
 
 		name = QLabel(self)
 		name.setText("Editing " + self.name)
 		authors = QLabel(self)
 		authors.setText("Made by " + self.author)
 
-		scenes_widget = QListWidget(self)
-		scenes_widget.insertItem(0, "Scene 1")
-		scenes_widget.insertItem(1, "Scene 2")
-		scenes_widget.insertItem(2, "Scene 3")
+		self.scenes_widget = QComboBox(self)
+		for i in range(len(self.mem_data["scenes"])):
+			self.scenes_widget.insertItem(i, f"Scene {i+1}")
 
-		lists.append(scenes_widget)
+		self.scenes_widget.currentIndexChanged.connect(lambda: self.restart())
+
+		self.scenes_widget.setCurrentIndex(self.mem_data["info"]["editor"]["current_scene"])
+
+		lists.append(self.scenes_widget)
 
 		labels.append(name)
 		labels.append(authors)
@@ -170,12 +200,28 @@ class Editor(QWidget):
 		buttons.append(add_scene_btn)
 		buttons.append(remove_scene_btn)
 		buttons.append(build_btn)
-		buttons.append(save_btn)
+		buttons.append(self.save_btn)
 
-		layout = QVBoxLayout(self)
+		layout = QGridLayout(self)
+		layout.setContentsMargins(200, 200, 200, 200)
+		self.setStyleSheet('background-color: white;')
 
+		lab = QLabel(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["title"])
+		layout.addWidget(lab, 0, 0)
+		titles.append(lab)
+		num = 0
+		for i1000 in range(len(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"])):
+			btn = QPushButton(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][i1000][0])
+			btn.clicked.connect(lambda btn, num=num: self.btn_editor(btn, self.scenes_widget.currentIndex(), num))
+			layout.addWidget(btn)
+			buttons.append(btn)
+			num +=1
 
 		self.setStyleSheet('background-color: rgb(37, 37, 37);')
+		for i in titles:
+			i.setStyleSheet('color: white; font-size: 36px;')
+			i.adjustSize()
+
 		for i in labels:
 			i.setStyleSheet('color: white; font-size: 16px;')
 			i.adjustSize()
@@ -191,28 +237,109 @@ class Editor(QWidget):
 
 		name.move(10, 5)
 		authors.move(10, 29)
-		scenes_widget.move(1810, 10)
-		scenes_widget.setFixedSize(100, 1000)
-		add_scene_btn.move(1877, 1020)
-		add_scene_btn.setStyleSheet('color: white; background-color: rgb(59, 171, 130); font-size: 16px; border: 1px solid rgb(59, 171, 130);')
+		self.scenes_widget.move(1780, 10)
+		self.scenes_widget.setFixedSize(130, 40)
+		add_scene_btn.move(1877, 60)
+		add_scene_btn.setStyleSheet(
+			'color: white; background-color: rgb(59, 171, 130); font-size: 16px; border: 1px solid rgb(59, 171, 130);')
 		add_scene_btn.setFixedSize(32, 32)
 
-		remove_scene_btn.move(1810, 1020)
-		remove_scene_btn.setStyleSheet('color: white; background-color: rgb(179, 0, 0); font-size: 16px; border: 1px solid rgb(179, 0, 0);')
+		remove_scene_btn.move(1810, 60)
+		remove_scene_btn.setStyleSheet(
+			'color: white; background-color: rgb(179, 0, 0); font-size: 16px; border: 1px solid rgb(179, 0, 0);')
 		remove_scene_btn.setFixedSize(32, 32)
 
-		save_btn.move(10, 1020)
-		save_btn.setFixedSize(60, 40)
-		build_btn.move(80, 1020)
+		self.save_btn.move(1740, 1020)
+		self.save_btn.setFixedSize(60, 40)
+		build_btn.move(1810, 1020)
 		build_btn.setFixedSize(100, 40)
 
+		self.save_btn.clicked.connect(lambda: self.save(self.scenes_widget, self.save_btn))
+
+		# layout.widget
 		self.setLayout(layout)
 
+	def restart(self):
+		self.save(self.scenes_widget, self.save_btn)
+		QCoreApplication.quit()
+		status = QProcess.startDetached(sys.executable, sys.argv)
+		# self.save(self.scenes_widget, self.save_btn)
+		# self.hide()
+		# time.sleep(1)
+		# restart_editor(self.name, self.author, self.out)
+
+	def btn_editor(self, btn, scene_id, btn_id):
+		dlg = ButtonEditor(self, btn, scene_id, self.mem_data, btn_id)
+		dlg.exec()
+
+	def save(self, scenes_widget, save_btn):
+		save_btn.setVisible(False)
+
+		self.mem_data["info"]["editor"]["current_scene"] = scenes_widget.currentIndex()
+
+		file = open(f"editor/{self.name}/save.json", "w")
+		json.dump(self.mem_data, file)
+		file.close()
+
+		save_btn.setVisible(True)
+
+
+class ButtonEditor(QDialog):
+	def __init__(self, parent, btn: QPushButton, scene_id, memory, btn_id):
+		super().__init__(parent)
+
+		labels = []
+		lines = []
+
+		self.setWindowTitle(f"Editing button {btn_id} in scene {scene_id}")
+
+		self.layout = QVBoxLayout()
+		self.layout1 = QHBoxLayout()
+		self.layout2 = QHBoxLayout()
+		self.layout3 = QVBoxLayout()
+		message1 = QLabel("Button text:")
+		labels.append(message1)
+		btn_text = QLineEdit()
+		lines.append(btn_text)
+
+		message2 = QLabel("Button action:")
+		labels.append(message2)
+
+		message3 = QLabel("Notes:")
+		labels.append(message3)
+		notes = QTextEdit()
+		lines.append(notes)
+
+		self.layout1.addWidget(message1)
+		self.layout1.addWidget(btn_text)
+		self.layout2.addWidget(message2)
+		self.layout3.addWidget(message3)
+		self.layout3.addWidget(notes)
+
+		self.layout.addLayout(self.layout1)
+		self.layout.addLayout(self.layout2)
+		self.layout.addLayout(self.layout3)
+		self.setLayout(self.layout)
+
+		self.setFixedSize(800, 300)
+
+		for label in labels:
+			label.setStyleSheet("color: white; font-size: 16px;")
+			label.adjustSize()
+
+		for line in lines:
+			line.setStyleSheet("color: white; font-size: 12px;")
+			line.adjustSize()
+
+def restart_editor(name, authors, out):
+	w = Editor(name, authors, out)
+	w.show()
 
 if __name__ == "__main__":
 	app = QApplication(sys.argv)
 
 	window = Editor("test", "JX_Snack", "out/")
+	# window = Creator()
 	window.show()
 
 	app.exec()
