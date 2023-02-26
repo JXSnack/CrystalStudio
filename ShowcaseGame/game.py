@@ -4,7 +4,7 @@ from crys.crystal import BuilderType
 game = {
 	"info": {
 		"name": "Showcase Game",
-		"authors": ["JX_Snack", "papa"],
+		"authors": ["JX_Snack"],
 		"out": "out/"
 	},
 
