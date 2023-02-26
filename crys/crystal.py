@@ -1,3 +1,6 @@
+import os
+
+
 class Game:
 	def __init__(self, game, how):
 		self.game = game  # what game
@@ -11,7 +14,10 @@ class Game:
 		print("Initialized '" + game["info"]["name"] + "'")  # debug check
 
 	def build(self):
-		if self.build_type == BuilderType.PYTHON:  # if the builder type is python export
+		if self.build_type == {"builder_type": "cs"}:
+			print("Sadly, this builder type isn't ready yet. Try another one!")
+
+		elif self.build_type == BuilderType.PYTHON:  # if the builder type is python export
 			print("Building game with " + BuilderType.PYTHON["builder_type"])
 			returned_game = f"""
 
@@ -75,11 +81,94 @@ while game_running:
 			file.write(returned_game)
 			file.close()
 			print("Finished!")
+		elif self.build_type == BuilderType.HTML:  # if the builder type is html export
+			print("Building game with " + BuilderType.HTML["builder_type"])
+			returned_game = f"""
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta name="description" content="Crystal Studio Game" />
+  <meta charset="utf-8">
+  <title>{self.name} - Crystal Studio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+	<center>
+		<h1>{self.name} by {self.authors}</h1>
+		<button onclick="window.location.replace('1.html')">Play</button><br/>
+	</center>
+</body>
+			"""
+
+			print("Creating file...")
+			os.mkdir(self.out + "HTML/")
+			folder = self.out + "HTML/"
+			os.mkdir(folder + "css")
+			css = open(folder + "css/style.css", "w")
+			css.write("""
+html {
+	background-color: #252525ff;
+	color: white;
+	font-family: Arial;
+}
+
+button {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  cursor: pointer;
+}
+			""")
+			css.close()
+			file = open(folder + "index.html", "w")
+
+			file.write(returned_game)
+			file.close()
+
+			num = 0
+			for i in self.scenes:
+				scene_file = open(folder + f"{num + 1}.html", "w")
+
+				buttons = i['buttons']
+				btn_text = ""
+				for i2 in buttons:
+					btn_text += f"<button onclick=\"window.location.replace('{i2[1]}.html')\">{i2[0]}</button><br/><br/>\n"
+
+				btn_text += f"<button onclick=\"window.location.replace('index.html')\">Back to main menu</button>\n"
+
+				scene_file.write(f"""
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta name="description" content="Crystal Studio Game" />
+  <meta charset="utf-8">
+  <title>{self.name} - Crystal Studio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+	<center>
+		<h1>{i["title"]}</h1>
+		{btn_text}
+	</center>
+</body>
+""")
+				num+=1
 
 
 class BuilderType:
-	GAME = {"builder_type": "player"}
-	PYTHON = {"builder_type": "python"}
-	HTML = {"builder_type": "cs"}
+	GAME = {"builder_type": "cs"}
+	PYTHON = {"builder_type": "Python"}
+	HTML = {"builder_type": "HTML"}
 	HTMLPlus = {"builder_type": "cs"}
 	RAWQT = {"builder_type": "cs"}

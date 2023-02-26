@@ -35,4 +35,4 @@ game = {
 	]
 }
 
-crys.crystal.Game(game, BuilderType.PYTHON).build()
+crys.crystal.Game(game, BuilderType.HTML).build()
