@@ -1,15 +1,27 @@
 import os
 
 
+class BuilderType:
+	GAME = {"builder_type": "cs"}
+	PYTHON = {"builder_type": "Python"}
+	HTML = {"builder_type": "HTML"}
+	HTMLPlus = {"builder_type": "HTML Plus"}
+	RAWQT = {"builder_type": "cs"}
+
+
 class Game:
-	def __init__(self, game, how):
+	def __init__(self, game: dict, how: BuilderType, from_editor: bool = False) -> None:
 		self.game = game  # what game
 		self.build_type = how  # how should it be exported?
+		self.from_editor = from_editor # does the request come from the editor?
 
 		self.name = game["info"]["name"]  # game name
 		self.authors = ", ".join(game["info"]["authors"])  # authors
 		self.out = game["info"]["out"]
 		self.scenes = game["scenes"]  # the scenes
+
+		if self.from_editor is True:
+			self.out = f"editor/{self.name}/" + self.out
 
 		print("Initialized '" + game["info"]["name"] + "'")  # debug check
 
@@ -312,10 +324,3 @@ button {
 
 			print("Finished")
 
-
-class BuilderType:
-	GAME = {"builder_type": "cs"}
-	PYTHON = {"builder_type": "Python"}
-	HTML = {"builder_type": "HTML"}
-	HTMLPlus = {"builder_type": "HTML Plus"}
-	RAWQT = {"builder_type": "cs"}

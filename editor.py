@@ -6,6 +6,9 @@ from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 
+import crys.crystal
+import crys.helper as helper
+
 
 class Creator(QMainWindow):
 	def __init__(self):
@@ -245,7 +248,6 @@ class Editor(QWidget):
 		self.fix_css()
 		self.build_preview()
 
-
 	def build_preview(self):
 		# print(self.preview)
 		for prev in self.preview:
@@ -274,8 +276,8 @@ class Editor(QWidget):
 			except IndexError:
 				continue
 
-		lab.mousePressEvent = lambda throw_away, scene_id=self.scenes_widget.currentIndex(), lab=lab: self.txt_editor(lab, scene_id)
-
+		lab.mousePressEvent = lambda throw_away, scene_id=self.scenes_widget.currentIndex(), lab=lab: self.txt_editor(
+			lab, scene_id)
 
 		self.fix_css()
 		self.save()
@@ -359,6 +361,7 @@ class Editor(QWidget):
 	def change_label_text(self, text):
 		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["title"] = text
 		self.save()
+
 
 class ButtonEditor(QDialog):
 	def __init__(self, parent, btn: QPushButton, scene_id, memory, btn_id, editor):
@@ -463,6 +466,7 @@ class ButtonEditor(QDialog):
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
 			   self.mem["info"]["out"]).show()
 
+
 class TextEditor(QDialog):
 	def __init__(self, parent, label: QLabel, scene_id, memory, editor):
 		super().__init__(parent)
@@ -534,69 +538,74 @@ class TextEditor(QDialog):
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
 			   self.mem["info"]["out"]).show()
 
+
 class BuildMenu(QDialog):
 	def __init__(self, parent, memory, editor):
 		super().__init__(parent)
 
-		labels = []
-		lines = []
-		buttons = []
+		self.labels = []
+		self.lines = []
+		self.buttons = []
 
 		self.editor = editor
 		self.mem = memory
 
-		self.setWindowTitle(f"Building {self.mem['']}")
+		self.setWindowTitle(f"Build {self.mem['info']['name']}")
 
 		self.layout = QVBoxLayout()
 		self.layout1 = QHBoxLayout()
 		self.layout2 = QHBoxLayout()
-		self.layout3 = QVBoxLayout()
-		self.layout4 = QHBoxLayout()
-		message1 = QLabel("Text:")
-		labels.append(message1)
-		self.text = QTextEdit()
-		self.text.setText(self.label.text())
-		lines.append(self.text)
+
+		message1 = QLabel("Builder type:")
+		self.labels.append(message1)
+		self.builder_type = QComboBox()
+		self.builder_type.insertItem(0, "HTML+ (JavaScript, HTML, CSS)")
+		self.builder_type.insertItem(1, "HTML (HTML, CSS)")
+		self.builder_type.insertItem(2, "Python (Terminal game)")
+		self.lines.append(self.builder_type)
 
 		cancel = QPushButton("Cancel")
 		cancel.clicked.connect(lambda: self.cancel())
-		save = QPushButton("Save")
-		save.clicked.connect(lambda: self.save_btn_clicked())
-		buttons.append(cancel)
-		buttons.append(save)
+		save = QPushButton("Build")
+		save.clicked.connect(lambda: self.build_btn_clicked())
+		self.buttons.append(cancel)
+		self.buttons.append(save)
 
 		self.layout1.addWidget(message1)
-		self.layout1.addWidget(self.text)
-		self.layout4.addWidget(cancel)
-		self.layout4.addWidget(save)
+		self.layout1.addWidget(self.builder_type)
+		self.layout2.addWidget(cancel)
+		self.layout2.addWidget(save)
 
 		self.layout.addLayout(self.layout1)
 		self.layout.addLayout(self.layout2)
-		self.layout.addLayout(self.layout3)
-		self.layout.addLayout(self.layout4)
 
 		self.setLayout(self.layout)
 
 		self.setFixedSize(800, 300)
 
-		for label in labels:
+		for label in self.labels:
 			label.setStyleSheet("color: white; font-size: 16px;")
 			label.adjustSize()
 
-		for line in lines:
+		for line in self.lines:
 			line.setStyleSheet("color: white; font-size: 12px; border: 1px solid white;")
 			line.adjustSize()
 
-		for button in buttons:
+		for button in self.buttons:
 			button.setStyleSheet("color: white; font-size: 12px; border: 1px solid white;")
 			button.adjustSize()
 
-	def save_btn_clicked(self):
-		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
-			   self.mem["info"]["out"]).change_label_text(self.text.toPlainText())
-		self.hide()
-		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
-			   self.mem["info"]["out"]).show()
+	def build_btn_clicked(self):
+		try:
+			crys.crystal.Game(self.mem, helper.translate_builder(self.builder_type.currentText()), True).build()
+			helper.open_file(f"editor/{self.mem['info']['name']}/{self.mem['info']['out']}")
+			self.hide()
+			Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
+				   self.mem["info"]["out"]).show()
+
+		except FileExistsError:
+			print("ERROR: already exported this once. Delete the old folder and build again!")
+			helper.open_file(f"editor/{self.mem['info']['name']}/{self.mem['info']['out']}")
 
 	def cancel(self):
 		self.hide()
@@ -607,7 +616,9 @@ class BuildMenu(QDialog):
 if __name__ == "__main__":
 	app = QApplication(sys.argv)
 
-	window = Editor("test", "JX_Snack", "out/")
+	window = BuildMenu(Editor("test", "JX_Snack", "out/"), Editor("test", "JX_Snack", "out/").mem_data,
+					   Editor("test", "JX_Snack", "out/").editor_data)
+	# window = Editor("test", "JX_Snack", "out/")
 	# window = Creator()
 	window.show()
 
