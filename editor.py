@@ -199,6 +199,7 @@ class Editor(QWidget):
 
 		build_btn = QPushButton(self)
 		build_btn.setText("Build game")
+		build_btn.clicked.connect(lambda: BuildMenu(self, self.mem_data, self.editor_data).show())
 
 		self.save_btn = QPushButton(self)
 		self.save_btn.setText("Save")
@@ -616,9 +617,9 @@ class BuildMenu(QDialog):
 if __name__ == "__main__":
 	app = QApplication(sys.argv)
 
-	window = BuildMenu(Editor("test", "JX_Snack", "out/"), Editor("test", "JX_Snack", "out/").mem_data,
-					   Editor("test", "JX_Snack", "out/").editor_data)
-	# window = Editor("test", "JX_Snack", "out/")
+	# window = BuildMenu(Editor("test", "JX_Snack", "out/"), Editor("test", "JX_Snack", "out/").mem_data,
+	# 				   Editor("test", "JX_Snack", "out/").editor_data)
+	window = Editor("test", "JX_Snack", "out/")
 	# window = Creator()
 	window.show()
 
