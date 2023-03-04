@@ -193,9 +193,11 @@ class Editor(QWidget):
 
 		add_scene_btn = QPushButton(self)
 		add_scene_btn.setText("+")
+		add_scene_btn.clicked.connect(lambda: self.add_scene())
 
 		remove_scene_btn = QPushButton(self)
 		remove_scene_btn.setText("-")
+		remove_scene_btn.clicked.connect(lambda: self.remove_scene())
 
 		build_btn = QPushButton(self)
 		build_btn.setText("Build game")
@@ -210,8 +212,7 @@ class Editor(QWidget):
 		authors.setText("Made by " + self.author)
 
 		self.scenes_widget = QComboBox(self)
-		for i in range(len(self.mem_data["scenes"])):
-			self.scenes_widget.insertItem(i, f"Scene {i + 1}")
+		self.refresh_scenes_widget()
 
 		self.scenes_widget.currentIndexChanged.connect(lambda: self.build_preview())
 
@@ -341,6 +342,13 @@ class Editor(QWidget):
 
 		self.save_btn.setVisible(True)
 
+	def refresh_scenes_widget(self):
+		last_scene = self.scenes_widget.currentIndex()
+		self.scenes_widget.clear()
+		for i in range(len(self.mem_data["scenes"])):
+			self.scenes_widget.insertItem(i, f"Scene {i + 1}")
+			self.scenes_widget.setCurrentIndex(last_scene)
+
 	def remove_btn(self, value):
 		del self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][value]
 		self.save()
@@ -362,6 +370,30 @@ class Editor(QWidget):
 	def change_label_text(self, text):
 		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["title"] = text
 		self.save()
+
+	def add_scene(self):
+		self.mem_data["scenes"].append({"title": "Scene " + str(self.scenes_widget.count() + 1), "buttons": [["Button 1", 1], ["Button 2", 1]]})
+		self.editor_data["scenes"].append([{"notes": ""}, {"notes": ""}])
+		self.save()
+
+		self.refresh_scenes_widget()
+		self.scenes_widget.setCurrentIndex(self.scenes_widget.count()-1)
+
+
+	def remove_scene(self):
+		try:
+			if not self.scenes_widget.currentIndex() in [0, self.scenes_widget.count()-1]:
+				del self.mem_data["scenes"][self.scenes_widget.currentIndex()]
+				del self.editor_data["scenes"][self.scenes_widget.currentIndex()]
+				self.save()
+
+				self.refresh_scenes_widget()
+				self.scenes_widget.setCurrentIndex(self.scenes_widget.count() - 2)
+			else:
+				print(f"An error occurred. This is probably why:\n -> You tried to delete scene number 1 (main scene cannot be removed)\n -> You tried to delete the last scene (last scene cannot be removed)\n\nIf this is not the case, please report this issue on Github\nMore info: \"ScenesWidget.currentIndex() in [0 and count-1]\" removing bug")
+		except IndexError as err:
+			print(f"Error: Save file and/or editor save file got/are corrupted! Please try launching the app again. If this error continues, please report this issue on Github\nMore info: [IndexError] {err}")
+			sys.exit(1)
 
 
 class ButtonEditor(QDialog):
@@ -453,7 +485,7 @@ class ButtonEditor(QDialog):
 
 	def save_btn_clicked(self):
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
-			   self.mem["info"]["out"]).change_btn_exec(self.btn_id, self.scenes_widget.currentIndex())
+			   self.mem["info"]["out"]).change_btn_exec(self.btn_id, self.scenes_widget.currentIndex() - 1)
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
 			   self.mem["info"]["out"]).change_btn_note(self.btn_id, self.notes.toPlainText())
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
@@ -610,8 +642,8 @@ class BuildMenu(QDialog):
 
 	def cancel(self):
 		self.hide()
-		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
-			   self.mem["info"]["out"]).show()
+		# Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
+		# 	   self.mem["info"]["out"]).show()
 
 
 if __name__ == "__main__":
