@@ -194,14 +194,17 @@ class Editor(QWidget):
 		add_scene_btn = QPushButton(self)
 		add_scene_btn.setText("+")
 		add_scene_btn.clicked.connect(lambda: self.add_scene())
+		add_scene_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
 		add_button_btn = QPushButton(self)
 		add_button_btn.setText("+ Button")
 		add_button_btn.clicked.connect(lambda: self.add_button())
+		add_button_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
 		remove_scene_btn = QPushButton(self)
 		remove_scene_btn.setText("-")
 		remove_scene_btn.clicked.connect(lambda: self.remove_scene())
+		remove_scene_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
 		build_btn = QPushButton(self)
 		build_btn.setText("Build game")
