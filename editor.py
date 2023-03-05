@@ -13,38 +13,44 @@ import crys.helper as helper
 class Creator(QMainWindow):
 	def __init__(self):
 		super().__init__()
-		self.build_ui()
+
+		self.titles = []
+		self.labels = []
+		self.buttons = []
+		self.lists = []
+
 		self.w = None  # no extra window yet
 
-	def build_ui(self):
-		self.setWindowTitle("CrystalStudio Editor")
+		self.build_ui()
 
-		self.label = QLabel("No recent projects found...")
+	def build_ui(self):
+
+		self.setWindowTitle("CrystalStudio - (Main menu)")
+
+		self.label = QLabel("Recent projects feature coming soon!")
 		self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+		self.labels.append(self.label)
 
 		self.setCentralWidget(self.label)
 
-		toolbar = QToolBar("Toolbar")
-		toolbar.setIconSize(QSize(16, 16))
-		self.addToolBar(toolbar)
-
-		new_project = QAction("New project", self)
+		new_project = QPushButton("New project", self)
 		new_project.setStatusTip("Create a new project")
-		new_project.triggered.connect(self.new_project_fnc)
-		toolbar.addAction(new_project)
+		new_project.clicked.connect(self.new_project_fnc)
 
-		toolbar.addSeparator()
+		self.buttons.append(new_project)
 
-		open_project = QAction("Open Project", self)
+		open_project = QPushButton("Open Project", self)
 		open_project.setStatusTip("Open a project that is saved")
-		open_project.triggered.connect(self.open_project_fnc)
-		toolbar.addAction(open_project)
+		open_project.clicked.connect(self.open_project_fnc)
 
-		toolbar.addAction(open_project)
+		self.buttons.append(open_project)
 
 		self.setStatusBar(QStatusBar(self))
 
 		self.setMinimumSize(960, 540)
+
+		self.fix_css()
 
 	def new_project_fnc(self):
 		self.np_dlg = QDialog(self)
@@ -84,8 +90,15 @@ class Creator(QMainWindow):
 
 		self.np_dlg.setLayout(layout)
 
-		self.np_dlg.setFixedSize(int(960 / 2), int(540 / 2))
+		self.np_dlg.setFixedSize(480, 270)
+		test = QListWidget()
 
+		test.insertItem(0, "Test")
+		test.insertItem(1, "Test2")
+
+		test.currentItemChanged.connect(lambda: print("HELLO"))
+
+		layout.addWidget(test, 2, 2)
 		self.name_label = QLabel(self)
 		self.name_label.setText("Name")
 
@@ -126,6 +139,37 @@ class Creator(QMainWindow):
 		except FileExistsError as err:
 			print("ERROR:", err, "| Please pick a different name.")
 			sys.exit(1)
+
+	def fix_css(self):
+		self.setStyleSheet('background-color: rgb(37, 37, 37);')
+		for i in self.titles:
+			try:
+				i.setStyleSheet('color: white; font-size: 36px;')
+				i.adjustSize()
+			except RuntimeError:
+				continue
+
+		for i in self.labels:
+			try:
+				i.setStyleSheet('color: white; font-size: 16px;')
+				i.adjustSize()
+			except RuntimeError:
+				continue
+
+		for i in self.lists:
+			try:
+				i.setStyleSheet('color: white; background-color: gray; font-size: 18px; border: 0px solid gray;')
+				i.adjustSize()
+			except RuntimeError:
+				continue
+
+		for i in self.buttons:
+			try:
+				i.setStyleSheet('color: white; background-color: gray; font-size: 16px; border: 1px solid gray;')
+				i.adjustSize()
+				i.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+			except RuntimeError:
+				continue
 
 
 class Editor(QWidget):
@@ -679,8 +723,8 @@ if __name__ == "__main__":
 
 	# window = BuildMenu(Editor("test", "JX_Snack", "out/"), Editor("test", "JX_Snack", "out/").mem_data,
 	# 				   Editor("test", "JX_Snack", "out/").editor_data)
-	window = Editor("test", "JX_Snack", "out/")
-	# window = Creator()
+	# window = Editor("test", "JX_Snack", "out/")
+	window = Creator()
 	window.show()
 
 	app.exec()
