@@ -195,6 +195,10 @@ class Editor(QWidget):
 		add_scene_btn.setText("+")
 		add_scene_btn.clicked.connect(lambda: self.add_scene())
 
+		add_button_btn = QPushButton(self)
+		add_button_btn.setText("+ Button")
+		add_button_btn.clicked.connect(lambda: self.add_button())
+
 		remove_scene_btn = QPushButton(self)
 		remove_scene_btn.setText("-")
 		remove_scene_btn.clicked.connect(lambda: self.remove_scene())
@@ -235,7 +239,11 @@ class Editor(QWidget):
 			'color: white; background-color: rgb(59, 171, 130); font-size: 16px; border: 1px solid rgb(59, 171, 130);')
 		add_scene_btn.setFixedSize(32, 32)
 
-		remove_scene_btn.move(1810, 60)
+		add_button_btn.move(1780, 100)
+		add_button_btn.setFixedSize(130, 40)
+		add_button_btn.setStyleSheet('color: white; background-color: rgb(59, 171, 130); font-size: 16px; border: 1px solid rgb(59, 171, 130);')
+
+		remove_scene_btn.move(1780, 60)
 		remove_scene_btn.setStyleSheet(
 			'color: white; background-color: rgb(179, 0, 0); font-size: 16px; border: 1px solid rgb(179, 0, 0);')
 		remove_scene_btn.setFixedSize(32, 32)
@@ -379,6 +387,13 @@ class Editor(QWidget):
 		self.refresh_scenes_widget()
 		self.scenes_widget.setCurrentIndex(self.scenes_widget.count()-1)
 
+	def add_button(self):
+		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"].append(["Button", 1])
+		self.editor_data["scenes"][self.scenes_widget.currentIndex()].append({"notes": ""})
+
+		self.save()
+
+		self.build_preview()
 
 	def remove_scene(self):
 		try:
@@ -389,11 +404,21 @@ class Editor(QWidget):
 
 				self.refresh_scenes_widget()
 				self.scenes_widget.setCurrentIndex(self.scenes_widget.count() - 2)
+			elif self.scenes_widget.currentIndex() == 0:
+				print(f"An error occurred. This is probably why:\n -> You tried to delete scene number 1 (main scene cannot be removed)\n\nIf this is not the case, please report this issue on Github\nMore info: \"ScenesWidget.currentIndex() in [0 and count-1]\" removing bug")
+
+			elif self.scenes_widget.currentIndex() == self.scenes_widget.count()-1:
+				del self.mem_data["scenes"][self.scenes_widget.currentIndex()]
+				del self.editor_data["scenes"][self.scenes_widget.currentIndex() ]
+
+				self.save()
+				self.refresh_scenes_widget()
+				self.scenes_widget.setCurrentIndex(self.scenes_widget.count() - 1)
 			else:
-				print(f"An error occurred. This is probably why:\n -> You tried to delete scene number 1 (main scene cannot be removed)\n -> You tried to delete the last scene (last scene cannot be removed)\n\nIf this is not the case, please report this issue on Github\nMore info: \"ScenesWidget.currentIndex() in [0 and count-1]\" removing bug")
+				print(f"An error occurred. This is probably why:\n -> You tried to delete scene number 1 (main scene cannot be removed)\nIf this is not the case, please report this issue on Github\nMore info: \"ScenesWidget.currentIndex() in [0 and count-1]\" removing bug")
+
 		except IndexError as err:
-			print(f"Error: Save file and/or editor save file got/are corrupted! Please try launching the app again. If this error continues, please report this issue on Github\nMore info: [IndexError] {err}")
-			sys.exit(1)
+			print(f"An error occurred. \n\nPlease report this issue on Github\nMore info: \"[IndexError] {err} --- tried remove_scene(self)")
 
 
 class ButtonEditor(QDialog):
@@ -485,7 +510,7 @@ class ButtonEditor(QDialog):
 
 	def save_btn_clicked(self):
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
-			   self.mem["info"]["out"]).change_btn_exec(self.btn_id, self.scenes_widget.currentIndex() - 1)
+			   self.mem["info"]["out"]).change_btn_exec(self.btn_id, self.scenes_widget.currentIndex())
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
 			   self.mem["info"]["out"]).change_btn_note(self.btn_id, self.notes.toPlainText())
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
