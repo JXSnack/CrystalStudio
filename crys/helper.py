@@ -4,6 +4,7 @@ import subprocess
 
 from crys.crystal import *
 
+version = "1.0.0"
 
 def open_file(path: str) -> None:
 	if platform.system() == "Windows":

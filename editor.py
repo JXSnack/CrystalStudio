@@ -34,21 +34,38 @@ class Creator(QMainWindow):
 
 		self.setCentralWidget(self.label)
 
+		self.pic = QLabel(self)
+		self.pic.setPixmap(QPixmap("crys/storage/icon.png"))
+		self.pic.setScaledContents(True)
+		self.pic.setGeometry(10, 0, int(128/2), int(128/2))
+
+		self.anl = QLabel(self) # anl means app_name_label
+		self.anl.move(76, 6)
+		self.anl.setText("CrystalStudio")
+		self.anl.setStyleSheet("color: white; font-size: 14px; background-color: none;")
+
+		self.avl = QLabel(self) #avl means app_version_label
+		self.avl.move(76, 24)
+		self.avl.setText(helper.version)
+		self.avl.setStyleSheet("color: gray; font-size: 12px; background-color: none;")
+
 		new_project = QPushButton("New project", self)
-		new_project.setStatusTip("Create a new project")
 		new_project.clicked.connect(self.new_project_fnc)
+		new_project.setToolTip("Create a new project")
+		new_project.move(25, 80)
 
 		self.buttons.append(new_project)
 
 		open_project = QPushButton("Open Project", self)
-		open_project.setStatusTip("Open a project that is saved")
+		open_project.setToolTip("Open a saved project")
 		open_project.clicked.connect(self.open_project_fnc)
+		open_project.move(25, 110)
 
 		self.buttons.append(open_project)
 
 		self.setStatusBar(QStatusBar(self))
 
-		self.setMinimumSize(960, 540)
+		self.setFixedSize(960, 540)
 
 		self.fix_css()
 
@@ -91,14 +108,7 @@ class Creator(QMainWindow):
 		self.np_dlg.setLayout(layout)
 
 		self.np_dlg.setFixedSize(480, 270)
-		test = QListWidget()
 
-		test.insertItem(0, "Test")
-		test.insertItem(1, "Test2")
-
-		test.currentItemChanged.connect(lambda: print("HELLO"))
-
-		layout.addWidget(test, 2, 2)
 		self.name_label = QLabel(self)
 		self.name_label.setText("Name")
 
@@ -107,7 +117,14 @@ class Creator(QMainWindow):
 		self.np_dlg.exec()
 
 	def open_project_fnc(self):
-		print("Coming soon!")
+		file = str(QFileDialog.getExistingDirectory(self, "Select project directory"))
+		try:
+			mem_file = open(file + "/save.json", "r")
+			mem = json.load(mem_file)
+			self.hide()
+			Editor(mem["info"]["name"], ", ".join(mem["info"]["authors"]), mem["info"]["out"]).show()
+		except FileNotFoundError:
+			print("INVALID DIRECTORY. PLEASE PICK A VALID PROJECT")
 
 	def create_project(self, name, author, out):
 		if name:
@@ -165,7 +182,7 @@ class Creator(QMainWindow):
 
 		for i in self.buttons:
 			try:
-				i.setStyleSheet('color: white; background-color: gray; font-size: 16px; border: 1px solid gray;')
+				i.setStyleSheet('color: white; background-color: rgb(51, 51, 51); font-size: 16px; border: 3px solid rgb(51, 51, 51);')
 				i.adjustSize()
 				i.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 			except RuntimeError:
@@ -726,5 +743,7 @@ if __name__ == "__main__":
 	# window = Editor("test", "JX_Snack", "out/")
 	window = Creator()
 	window.show()
+
+	app.setWindowIcon(QIcon('crys/storage/icon.png'))
 
 	app.exec()
