@@ -17,3 +17,4 @@ Coming soon - We're working on it.
  - HTML (HTML and CSS)
  - Python (Terminal Game)
  - More soon!
+<img src="https://raw.githubusercontent.com/JXSnack/CrystalStudio/main/crys/storage/icon.png" width=50px> 
