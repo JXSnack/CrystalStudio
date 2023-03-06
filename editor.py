@@ -37,14 +37,14 @@ class Creator(QMainWindow):
 		self.pic = QLabel(self)
 		self.pic.setPixmap(QPixmap("crys/storage/icon.png"))
 		self.pic.setScaledContents(True)
-		self.pic.setGeometry(10, 0, int(128/2), int(128/2))
+		self.pic.setGeometry(10, 0, int(128 / 2), int(128 / 2))
 
-		self.anl = QLabel(self) # anl means app_name_label
+		self.anl = QLabel(self)  # anl means app_name_label
 		self.anl.move(76, 6)
 		self.anl.setText("CrystalStudio")
 		self.anl.setStyleSheet("color: white; font-size: 14px; background-color: none;")
 
-		self.avl = QLabel(self) #avl means app_version_label
+		self.avl = QLabel(self)  # avl means app_version_label
 		self.avl.move(76, 24)
 		self.avl.setText(helper.version)
 		self.avl.setStyleSheet("color: gray; font-size: 12px; background-color: none;")
@@ -73,20 +73,29 @@ class Creator(QMainWindow):
 		self.np_dlg = QDialog(self)
 		self.np_dlg.setWindowTitle("New project")
 
-		layout = QGridLayout(self.np_dlg)
+		layout = QVBoxLayout(self.np_dlg)
+		layout2 = QHBoxLayout(self.np_dlg)
+		layout3 = QHBoxLayout(self.np_dlg)
+		layout4 = QHBoxLayout(self.np_dlg)
+		layout5 = QHBoxLayout(self.np_dlg)
 		label = QLabel(self.np_dlg)
+		self.labels.append(label)
 		label.setText("Project name:")
 		input_name = QLineEdit(self.np_dlg)
 
 		label2 = QLabel(self.np_dlg)
+		self.labels.append(label2)
 		label2.setText("Authors:")
 		input_authors = QLineEdit(self.np_dlg)
 		label2_help = QLabel(self.np_dlg)
 		label2_help.setText("(seperate by comma)")
+		self.labels.append(label2_help)
 
 		label3 = QLabel(self.np_dlg)
+		self.labels.append(label3)
 		label3.setText("Out folder:")
 		input_out = QLineEdit(self.np_dlg)
+		self.lists.append(input_out)
 		input_out.setText("out/")
 		input_out.setDisabled(True)
 		checkbox = QCheckBox(self.np_dlg)
@@ -95,24 +104,28 @@ class Creator(QMainWindow):
 		btn.setText("Create project")
 		btn.clicked.connect(lambda: self.create_project(input_name.text(), input_authors.text(), input_out.text()))
 
-		layout.addWidget(label, 0, 0)
-		layout.addWidget(input_name, 0, 1)
-		layout.addWidget(label2, 1, 0)
-		layout.addWidget(input_authors, 1, 1)
-		layout.addWidget(label2_help, 1, 2)
-		layout.addWidget(label3, 2, 0)
-		layout.addWidget(input_out, 2, 1)
-		layout.addWidget(checkbox, 2, 2)
-		layout.addWidget(btn, 3, 2)
+		layout2.addWidget(label)
+		layout2.addWidget(input_name)
+		layout3.addWidget(label2)
+		layout3.addWidget(input_authors)
+		layout3.addWidget(label2_help)
+		layout4.addWidget(label3)
+		layout4.addWidget(input_out)
+		layout4.addWidget(checkbox)
+		layout5.addWidget(btn)
+		layout.addLayout(layout2)
+		layout.addLayout(layout3)
+		layout.addLayout(layout4)
+		layout.addLayout(layout5)
+
+		self.buttons.append(btn)
 
 		self.np_dlg.setLayout(layout)
 
 		self.np_dlg.setFixedSize(480, 270)
 
-		self.name_label = QLabel(self)
-		self.name_label.setText("Name")
-
 		checkbox.toggled.connect(input_out.setEnabled)
+		self.fix_css()
 
 		self.np_dlg.exec()
 
@@ -158,7 +171,7 @@ class Creator(QMainWindow):
 			sys.exit(1)
 
 	def fix_css(self):
-		self.setStyleSheet('background-color: rgb(37, 37, 37);')
+		# self.setStyleSheet('')
 		for i in self.titles:
 			try:
 				i.setStyleSheet('color: white; font-size: 36px;')
@@ -175,18 +188,28 @@ class Creator(QMainWindow):
 
 		for i in self.lists:
 			try:
-				i.setStyleSheet('color: white; background-color: gray; font-size: 18px; border: 0px solid gray;')
+				i.setStyleSheet('color: white; font-size: 14px; border: 1px solid white;')
 				i.adjustSize()
 			except RuntimeError:
 				continue
 
 		for i in self.buttons:
 			try:
-				i.setStyleSheet('color: white; background-color: rgb(51, 51, 51); font-size: 16px; border: 3px solid rgb(51, 51, 51);')
+				i.setStyleSheet(
+					'color: white; background-color: rgb(51, 51, 51); font-size: 16px; border: 3px solid rgb(51, 51, 51);')
 				i.adjustSize()
 				i.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 			except RuntimeError:
 				continue
+
+		self.setStyleSheet("""
+		QWidget { background-color: rgb(37, 37, 37); } 
+		QCheckBox::indicator:unchecked {background-color: rgba(255, 90, 90, 0.5); border-radius: 3px;} 
+		QCheckBox::indicator::checked {background-color: rgba(90, 255, 90, 0.5); border-radius: 3px;}
+		QLineEdit:disabled {color: gray; font-size: 14px; border: 1px solid gray;}
+		QLineEdit:enabled {color: white; font-size: 14px; border: 1px solid white;}
+		
+""")
 
 
 class Editor(QWidget):
@@ -305,7 +328,8 @@ class Editor(QWidget):
 
 		add_button_btn.move(1780, 100)
 		add_button_btn.setFixedSize(130, 40)
-		add_button_btn.setStyleSheet('color: white; background-color: rgb(59, 171, 130); font-size: 16px; border: 1px solid rgb(59, 171, 130);')
+		add_button_btn.setStyleSheet(
+			'color: white; background-color: rgb(59, 171, 130); font-size: 16px; border: 1px solid rgb(59, 171, 130);')
 
 		remove_scene_btn.move(1780, 60)
 		remove_scene_btn.setStyleSheet(
@@ -444,12 +468,13 @@ class Editor(QWidget):
 		self.save()
 
 	def add_scene(self):
-		self.mem_data["scenes"].append({"title": "Scene " + str(self.scenes_widget.count() + 1), "buttons": [["Button 1", 1], ["Button 2", 1]]})
+		self.mem_data["scenes"].append(
+			{"title": "Scene " + str(self.scenes_widget.count() + 1), "buttons": [["Button 1", 1], ["Button 2", 1]]})
 		self.editor_data["scenes"].append([{"notes": ""}, {"notes": ""}])
 		self.save()
 
 		self.refresh_scenes_widget()
-		self.scenes_widget.setCurrentIndex(self.scenes_widget.count()-1)
+		self.scenes_widget.setCurrentIndex(self.scenes_widget.count() - 1)
 
 	def add_button(self):
 		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"].append(["Button", 1])
@@ -461,7 +486,7 @@ class Editor(QWidget):
 
 	def remove_scene(self):
 		try:
-			if not self.scenes_widget.currentIndex() in [0, self.scenes_widget.count()-1]:
+			if not self.scenes_widget.currentIndex() in [0, self.scenes_widget.count() - 1]:
 				del self.mem_data["scenes"][self.scenes_widget.currentIndex()]
 				del self.editor_data["scenes"][self.scenes_widget.currentIndex()]
 				self.save()
@@ -469,20 +494,23 @@ class Editor(QWidget):
 				self.refresh_scenes_widget()
 				self.scenes_widget.setCurrentIndex(self.scenes_widget.count() - 2)
 			elif self.scenes_widget.currentIndex() == 0:
-				print(f"An error occurred. This is probably why:\n -> You tried to delete scene number 1 (main scene cannot be removed)\n\nIf this is not the case, please report this issue on Github\nMore info: \"ScenesWidget.currentIndex() in [0 and count-1]\" removing bug")
+				print(
+					f"An error occurred. This is probably why:\n -> You tried to delete scene number 1 (main scene cannot be removed)\n\nIf this is not the case, please report this issue on Github\nMore info: \"ScenesWidget.currentIndex() in [0 and count-1]\" removing bug")
 
-			elif self.scenes_widget.currentIndex() == self.scenes_widget.count()-1:
+			elif self.scenes_widget.currentIndex() == self.scenes_widget.count() - 1:
 				del self.mem_data["scenes"][self.scenes_widget.currentIndex()]
-				del self.editor_data["scenes"][self.scenes_widget.currentIndex() ]
+				del self.editor_data["scenes"][self.scenes_widget.currentIndex()]
 
 				self.save()
 				self.refresh_scenes_widget()
 				self.scenes_widget.setCurrentIndex(self.scenes_widget.count() - 1)
 			else:
-				print(f"An error occurred. This is probably why:\n -> You tried to delete scene number 1 (main scene cannot be removed)\nIf this is not the case, please report this issue on Github\nMore info: \"ScenesWidget.currentIndex() in [0 and count-1]\" removing bug")
+				print(
+					f"An error occurred. This is probably why:\n -> You tried to delete scene number 1 (main scene cannot be removed)\nIf this is not the case, please report this issue on Github\nMore info: \"ScenesWidget.currentIndex() in [0 and count-1]\" removing bug")
 
 		except IndexError as err:
-			print(f"An error occurred. \n\nPlease report this issue on Github\nMore info: \"[IndexError] {err} --- tried remove_scene(self)")
+			print(
+				f"An error occurred. \n\nPlease report this issue on Github\nMore info: \"[IndexError] {err} --- tried remove_scene(self)")
 
 
 class ButtonEditor(QDialog):
@@ -731,8 +759,8 @@ class BuildMenu(QDialog):
 
 	def cancel(self):
 		self.hide()
-		# Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
-		# 	   self.mem["info"]["out"]).show()
+# Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
+# 	   self.mem["info"]["out"]).show()
 
 
 if __name__ == "__main__":
