@@ -3,3 +3,17 @@ CrystalStudio - An easy game engine written in python. More features will be add
 
 ## Wiki
 Coming soon - We're working on it.
+
+## Features
+ - Inifinite scenes
+ - Remove scenes
+ - Add scenes
+ - Edit labels (Text)
+ - Edit buttons (Action, text and notes)
+ - Remove buttons
+
+## Exports to
+ - HTML+ (JavaScript, HTML and CSS)
+ - HTML (HTML and CSS)
+ - Python (Terminal Game)
+ - More soon!
