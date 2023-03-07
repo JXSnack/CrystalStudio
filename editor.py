@@ -2,12 +2,18 @@ import json
 import os
 import sys
 
-from PyQt6.QtCore import *
-from PyQt6.QtGui import *
-from PyQt6.QtWidgets import *
-
 import crys.crystal
 import crys.helper as helper
+
+try:
+	from PyQt6.QtCore import *
+	from PyQt6.QtGui import *
+	from PyQt6.QtWidgets import *
+except ImportError:
+	helper.install_requirements()
+	print("\nPlease start the editor again!")
+	sys.exit(0)
+
 
 
 class Creator(QMainWindow):

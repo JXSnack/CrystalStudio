@@ -24,3 +24,6 @@ def translate_builder(text: str) -> BuilderType:
 		return BuilderType.PYTHON
 	else:
 		raise ValueError(f"Not translatable: {text}")
+
+def install_requirements() -> None:
+	os.system("python3 -m pip install PyQt6")
