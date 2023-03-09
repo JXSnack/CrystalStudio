@@ -227,9 +227,9 @@ class Editor(QWidget):
 
 			self.mem_data = {
 				"info": {"name": name, "authors": author.split(", "), "out": "out/"},
-				"scenes": [{"title": "Scene 1", "pointed": [["Go to scene 2", 2], ["Go to scene 3", 3]]},
-						   {"title": "Scene 2", "pointed": [["Go to scene 1", 1], ["Go to scene 3", 3]]},
-						   {"title": "Scene 3", "pointed": [["Go to scene 1", 1], ["Go to scene 2", 2]]}
+				"scenes": [{"title": "Scene 1", "buttons": [["Go to scene 2", 2], ["Go to scene 3", 3]]},
+						   {"title": "Scene 2", "buttons": [["Go to scene 1", 1], ["Go to scene 3", 3]]},
+						   {"title": "Scene 3", "buttons": [["Go to scene 1", 1], ["Go to scene 2", 2]]}
 						   ]
 			}
 
@@ -358,9 +358,9 @@ class Editor(QWidget):
 		self.titles.append(lab)
 		throw_away = 0
 		num = 0
-		for i1000 in range(len(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["pointed"])):
+		for i1000 in range(len(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"])):
 			try:
-				btn = QPushButton(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["pointed"][i1000][0])
+				btn = QPushButton(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][i1000][0])
 				btn.clicked.connect(
 					lambda throw_away, btn=btn, num=num: self.btn_editor(btn, self.scenes_widget.currentIndex(), num))
 				self.preview.append(btn)
@@ -442,13 +442,13 @@ class Editor(QWidget):
 			self.scenes_widget.setCurrentIndex(last_scene)
 
 	def remove_btn(self, value):
-		del self.mem_data["scenes"][self.scenes_widget.currentIndex()]["pointed"][value]
+		del self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][value]
 		self.save()
 		self.build_preview()
 		self.show()
 
 	def change_btn_text(self, button: int, update):
-		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["pointed"][button][0] = update
+		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][button][0] = update
 		self.save()
 
 	def change_btn_note(self, button: int, note):
@@ -456,7 +456,7 @@ class Editor(QWidget):
 		self.save()
 
 	def change_btn_exec(self, button: int, exec_: int):
-		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["pointed"][button][1] = exec_ + 1
+		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][button][1] = exec_ + 1
 		self.save()
 
 	def change_label_text(self, text):
@@ -465,7 +465,7 @@ class Editor(QWidget):
 
 	def add_scene(self):
 		self.mem_data["scenes"].append(
-			{"title": "Scene " + str(self.scenes_widget.count() + 1), "pointed": [["Button 1", 1], ["Button 2", 1]]})
+			{"title": "Scene " + str(self.scenes_widget.count() + 1), "buttons": [["Button 1", 1], ["Button 2", 1]]})
 		self.editor_data["scenes"].append([{"notes": ""}, {"notes": ""}])
 		self.save()
 
@@ -473,7 +473,7 @@ class Editor(QWidget):
 		self.scenes_widget.setCurrentIndex(self.scenes_widget.count() - 1)
 
 	def add_button(self):
-		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["pointed"].append(["Button", 1])
+		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"].append(["Button", 1])
 		self.editor_data["scenes"][self.scenes_widget.currentIndex()].append({"notes": ""})
 
 		self.save()
@@ -519,15 +519,15 @@ class SettingsWindow(QTabWidget):
 		except json.decoder.JSONDecodeError:
 			file = open(self.settings_filepath, "w")
 			file.write("""{
-	"ui_scale": 1,
-	"text_scale": 1,
+	"ui_scale": [1, 1],
+	"text_scale": [1, 1],
 	"theme": [1, "dark"]
 }""")
 			file.close()
 			self.settings = json.load(settings_file)
 			print("Settings were corrupted. Settings have been reset")
 
-		self.setFixedSize(540, 640)
+		self.setFixedSize(int(self.settings["ui_scale"][1]*540), int(self.settings["ui_scale"][1]*640))
 
 		self.build_ui()
 
@@ -558,19 +558,23 @@ class SettingsWindow(QTabWidget):
 		layout.addLayout(layout2)
 		label1 = QLabel("UI scale: ")
 		self.selector1 = QComboBox(self)
-		self.selector1.insertItem(0, "0.5 (Large)")
+		self.selector1.insertItem(0, "2 (Large)")
 		self.selector1.insertItem(1, "1 (Default)")
-		self.selector1.insertItem(2, "1.5 (Small)")
-		self.selector1.insertItem(3, "2 (Mini)")
-		self.selector1.setCurrentIndex(1)
+		self.selector1.insertItem(2, "0.5 (Small)")
+		self.selector1.insertItem(3, "0.25 (Mini)")
+		self.selector1.setCurrentIndex(self.settings["ui_scale"][0])
+
+		self.selector1.currentIndexChanged.connect(lambda: self.save())
 
 		label2 = QLabel("Text scale: ")
 		self.selector2 = QComboBox(self)
-		self.selector2.insertItem(0, "0.5 (Large)")
+		self.selector2.insertItem(0, "2 (Large)")
 		self.selector2.insertItem(1, "1 (Default)")
-		self.selector2.insertItem(2, "1.5 (Small)")
-		self.selector2.insertItem(3, "2 (Mini)")
-		self.selector2.setCurrentIndex(1)
+		self.selector2.insertItem(2, "0.5 (Small)")
+		self.selector2.insertItem(3, "0.25 (Mini)")
+		self.selector2.setCurrentIndex(self.settings["text_scale"][0])
+
+		self.selector2.currentIndexChanged.connect(lambda: self.save())
 
 		layout1.addWidget(label1)
 		layout1.addWidget(self.selector1)
@@ -615,6 +619,8 @@ class SettingsWindow(QTabWidget):
 
 	def save(self):
 		self.settings["theme"] = [self.selector3.currentIndex(), self.selector3.currentText().split()[0].lower()]
+		self.settings["ui_scale"] = [self.selector1.currentIndex(), float(self.selector1.currentText().split()[0].lower())]
+		self.settings["text_scale"] = [self.selector2.currentIndex(), float(self.selector2.currentText().split()[0].lower())]
 		settings_file = open(self.settings_filepath, "w")
 		json.dump(self.settings, settings_file)
 
@@ -627,6 +633,7 @@ class SettingsWindow(QTabWidget):
 
 	def fix_css(self):
 		self.setStyleSheet("".join(open("crys/storage/themes/" + self.settings["theme"][1] + ".theme", "r").readlines()))
+		self.setFixedSize(int(self.settings["ui_scale"][1]*540), int(self.settings["ui_scale"][1]*640))
 
 
 class ButtonEditor(QDialog):
@@ -661,7 +668,7 @@ class ButtonEditor(QDialog):
 		self.scenes_widget = QComboBox(self)
 		for i in range(len(memory["scenes"])):
 			self.scenes_widget.insertItem(i, f"Go to {i + 1}")
-		self.scenes_widget.setCurrentIndex(self.mem["scenes"][scene_id]["pointed"][btn_id][1])
+		self.scenes_widget.setCurrentIndex(self.mem["scenes"][scene_id]["buttons"][btn_id][1])
 		lines.append(self.scenes_widget)
 
 		message3 = QLabel("Notes:")
