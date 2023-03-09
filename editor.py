@@ -9,6 +9,8 @@ try:
 	from PyQt6.QtCore import *
 	from PyQt6.QtGui import *
 	from PyQt6.QtWidgets import *
+
+	import requests
 except ImportError:
 	helper.install_requirements()
 	print("\nPlease start the editor again!")
@@ -51,8 +53,9 @@ class Creator(QMainWindow):
 		self.anl.setStyleSheet("color: white; font-size: 14px; background-color: none;")
 
 		self.avl = QLabel(self)  # avl means app_version_label
-		self.avl.move(76, 24)
 		self.avl.setText(helper.version)
+		self.avl.adjustSize()
+		self.avl.move(76, 31)
 		self.avl.setStyleSheet("color: gray; font-size: 12px; background-color: none;")
 
 		new_project = QPushButton("New project", self)
