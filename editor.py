@@ -589,6 +589,7 @@ class SettingsWindow(QTabWidget):
 		self.selector3.insertItem(1, "Dark (Default)")
 		self.selector3.insertItem(2, "Light")
 		self.selector3.insertItem(3, "Eyeburn")
+		self.selector3.insertItem(4, "Sync")
 		self.selector3.setCurrentIndex(1)
 
 		self.selector3.currentIndexChanged.connect(lambda: self.save())
