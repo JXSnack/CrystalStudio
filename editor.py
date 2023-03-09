@@ -632,7 +632,7 @@ class SettingsWindow(QTabWidget):
 		self.hide()
 
 	def fix_css(self):
-		self.setStyleSheet("".join(open("crys/storage/themes/" + self.settings["theme"][1] + ".theme", "r").readlines()))
+		self.setStyleSheet(helper.generate_stylesheet(self.settings))
 		self.setFixedSize(int(self.settings["ui_scale"][1]*540), int(self.settings["ui_scale"][1]*640))
 
 
