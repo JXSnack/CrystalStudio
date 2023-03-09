@@ -17,7 +17,6 @@ except ImportError:
 	sys.exit(0)
 
 
-
 class Creator(QMainWindow):
 	def __init__(self):
 		super().__init__()
@@ -71,7 +70,7 @@ class Creator(QMainWindow):
 
 		setting_btn = QPushButton("Settings", self)
 		setting_btn.setToolTip("Open settings")
-		# setting_btn.clicked.connect()
+		setting_btn.clicked.connect(lambda: self.open_settings())
 		setting_btn.move(25, 150)
 		self.pointed.append(setting_btn)
 		self.adjusted.append(setting_btn)
@@ -81,6 +80,12 @@ class Creator(QMainWindow):
 		self.setFixedSize(960, 540)
 
 		self.fix_css()
+
+	def open_settings(self):
+		if self.w is None:
+			self.w = SettingsWindow()
+		self.w.show()
+		self.hide()
 
 	def new_project_fnc(self):
 		self.np_dlg = QDialog(self)
@@ -504,6 +509,109 @@ class Editor(QWidget):
 				f"An error occurred. \n\nPlease report this issue on Github\nMore info: \"[IndexError] {err} --- tried remove_scene(self)")
 
 
+class SettingsWindow(QTabWidget):
+	def __init__(self, parent=None):
+		super(SettingsWindow, self).__init__(parent)
+		self.settings_filepath = "crys/storage/settings.json"
+		settings_file = open(self.settings_filepath, "r")
+		self.settings = json.load(settings_file)
+
+		self.settings_file = open(self.settings_filepath, "w")
+
+		self.setFixedSize(540, 640)
+
+		self.build_ui()
+
+	def build_ui(self):
+		self.tab1 = QWidget()
+		self.tab2 = QWidget()
+		self.tab3 = QWidget()
+
+		self.addTab(self.tab1, "General settings")
+		self.addTab(self.tab2, "Color and themes")
+		self.addTab(self.tab3, "Save")
+
+		self.build_tab1UI()
+		self.build_tab2UI()
+		self.build_tab3UI()
+
+		self.save_btn.move(100, 100)
+
+		self.fix_css()
+
+		self.setWindowTitle("Settings")
+
+	def build_tab1UI(self):
+		layout1 = QHBoxLayout()
+		layout2 = QHBoxLayout()
+		layout = QVBoxLayout()
+		layout.addLayout(layout1)
+		layout.addLayout(layout2)
+		label1 = QLabel("UI scale: ")
+		selector1 = QComboBox(self)
+		selector1.insertItem(0, "0.5 (Large)")
+		selector1.insertItem(1, "1 (Default)")
+		selector1.insertItem(2, "1.5 (Small)")
+		selector1.insertItem(3, "2 (Mini)")
+		selector1.setCurrentIndex(1)
+
+		label2 = QLabel("Text scale: ")
+		selector2 = QComboBox(self)
+		selector2.insertItem(0, "0.5 (Large)")
+		selector2.insertItem(1, "1 (Default)")
+		selector2.insertItem(2, "1.5 (Small)")
+		selector2.insertItem(3, "2 (Mini)")
+		selector2.setCurrentIndex(1)
+
+		layout1.addWidget(label1)
+		layout1.addWidget(selector1)
+
+		layout2.addWidget(label2)
+		layout2.addWidget(selector2)
+
+		self.setTabText(0, "General settings")
+		self.tab1.setLayout(layout)
+
+	def build_tab2UI(self):
+		layout = QHBoxLayout()
+		label1 = QLabel("Theme: ")
+		selector1 = QComboBox(self)
+		selector1.insertItem(0, "Midnight")
+		selector1.insertItem(1, "Dark (Default)")
+		selector1.insertItem(2, "Light")
+		selector1.insertItem(3, "Eyeburn")
+		selector1.setCurrentIndex(1)
+
+		layout.addWidget(label1)
+		layout.addWidget(selector1)
+
+		self.setTabText(1, "Color and themes")
+		self.tab2.setLayout(layout)
+
+	def build_tab3UI(self):
+		layout = QHBoxLayout()
+
+		self.save_btn = QPushButton("Apply and save")
+		self.save_btn.clicked.connect(lambda: self.save())
+		self.exit_btn = QPushButton("Apply, save and exit")
+		self.exit_btn.clicked.connect(lambda: self.exit())
+		layout.addWidget(self.save_btn)
+		layout.addWidget(self.exit_btn)
+
+		self.setTabText(2, "Save")
+		self.tab3.setLayout(layout)
+
+	def save(self):
+		self.settings_file.write(self.settings)
+
+	def exit(self):
+		Creator().show()
+		self.hide()
+
+	def fix_css(self):
+		self.setStyleSheet("".join(open("crys/storage/themes/" + self.settings["theme"] + ".theme", "r").readlines()))
+
+
 class ButtonEditor(QDialog):
 	def __init__(self, parent, btn: QPushButton, scene_id, memory, btn_id, editor):
 		super().__init__(parent)
@@ -750,6 +858,8 @@ class BuildMenu(QDialog):
 
 	def cancel(self):
 		self.hide()
+
+
 # Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
 # 	   self.mem["info"]["out"]).show()
 
