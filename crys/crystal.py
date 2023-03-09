@@ -53,8 +53,8 @@ for i in range(20):
 while game_running:
 	print(game[current_scene]["title"])
 	num = 1
-	buttons = game[current_scene]["buttons"]
-	for i in buttons:
+	pointed = game[current_scene]["pointed"]
+	for i in pointed:
 		print(str(num) + ". " + i[0])
 		num+=1
 	print("exit. Exit the game")
@@ -73,7 +73,7 @@ while game_running:
 		try:
 			next_scene = int(action)
 			next_scene-=1
-			next_scene = buttons[next_scene][1]
+			next_scene = pointed[next_scene][1]
 			next_scene-=1
 			current_scene = next_scene
 			next_scene = None
@@ -149,7 +149,7 @@ button {
 			for i in self.scenes:
 				scene_file = open(folder + f"{num + 1}.html", "w")
 
-				buttons = i['buttons']
+				buttons = i['pointed']
 				btn_text = ""
 				for i2 in buttons:
 					btn_text += f"<button onclick=\"window.location.replace('{i2[1]}.html')\">{i2[0]}</button><br/><br/>\n"
@@ -246,7 +246,7 @@ button {
 <body>
 	<center>
 		<h1 id="title">PLAYER</h1>
-		<div id="buttons">
+		<div id="pointed">
 
         </div>
 	</center>
@@ -265,10 +265,10 @@ button {
   function updateScene(scene) {
     current_scene = scene;
     setText("title", game[scene]["title"])
-    clearDiv("buttons")
+    clearDiv("pointed")
 
-    for (let i2 = 0; i2 < game[current_scene]["buttons"].length;) {
-      createButton(game[current_scene]["buttons"][i2][0], game[current_scene]["buttons"][i2][1])
+    for (let i2 = 0; i2 < game[current_scene]["pointed"].length;) {
+      createButton(game[current_scene]["pointed"][i2][0], game[current_scene]["pointed"][i2][1])
       i2++;
     }
 
@@ -291,15 +291,15 @@ button {
     };
 
 
-    document.getElementById("buttons").appendChild(btn)
+    document.getElementById("pointed").appendChild(btn)
     btn = null
 
     var br = document.createElement("br")
-    document.getElementById("buttons").appendChild(br)
+    document.getElementById("pointed").appendChild(br)
     br = null
 
     var br = document.createElement("br")
-    document.getElementById("buttons").appendChild(br)
+    document.getElementById("pointed").appendChild(br)
     br = null
   }
 
@@ -310,7 +310,7 @@ button {
       window.location.replace("index.html");
     }
 
-    document.getElementById("buttons").appendChild(btn)
+    document.getElementById("pointed").appendChild(btn)
     btn = null
   }
 

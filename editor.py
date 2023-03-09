@@ -22,10 +22,8 @@ class Creator(QMainWindow):
 	def __init__(self):
 		super().__init__()
 
-		self.titles = []
-		self.labels = []
-		self.buttons = []
-		self.lists = []
+		self.adjusted = []
+		self.pointed = []
 
 		self.w = None  # no extra window yet
 
@@ -37,8 +35,6 @@ class Creator(QMainWindow):
 
 		self.label = QLabel("Recent projects feature coming soon!")
 		self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-		self.labels.append(self.label)
 
 		self.setCentralWidget(self.label)
 
@@ -63,14 +59,22 @@ class Creator(QMainWindow):
 		new_project.setToolTip("Create a new project")
 		new_project.move(25, 80)
 
-		self.buttons.append(new_project)
+		self.pointed.append(new_project)
+		self.adjusted.append(new_project)
 
 		open_project = QPushButton("Open Project", self)
 		open_project.setToolTip("Open a saved project")
 		open_project.clicked.connect(self.open_project_fnc)
-		open_project.move(25, 110)
+		open_project.move(25, 115)
+		self.pointed.append(open_project)
+		self.adjusted.append(open_project)
 
-		self.buttons.append(open_project)
+		setting_btn = QPushButton("Settings", self)
+		setting_btn.setToolTip("Open settings")
+		# setting_btn.clicked.connect()
+		setting_btn.move(25, 150)
+		self.pointed.append(setting_btn)
+		self.adjusted.append(setting_btn)
 
 		self.setStatusBar(QStatusBar(self))
 
@@ -88,23 +92,18 @@ class Creator(QMainWindow):
 		layout4 = QHBoxLayout(self.np_dlg)
 		layout5 = QHBoxLayout(self.np_dlg)
 		label = QLabel(self.np_dlg)
-		self.labels.append(label)
 		label.setText("Project name:")
 		input_name = QLineEdit(self.np_dlg)
 
 		label2 = QLabel(self.np_dlg)
-		self.labels.append(label2)
 		label2.setText("Authors:")
 		input_authors = QLineEdit(self.np_dlg)
 		label2_help = QLabel(self.np_dlg)
 		label2_help.setText("(seperate by comma)")
-		self.labels.append(label2_help)
 
 		label3 = QLabel(self.np_dlg)
-		self.labels.append(label3)
 		label3.setText("Out folder:")
 		input_out = QLineEdit(self.np_dlg)
-		self.lists.append(input_out)
 		input_out.setText("out/")
 		input_out.setDisabled(True)
 		checkbox = QCheckBox(self.np_dlg)
@@ -127,7 +126,7 @@ class Creator(QMainWindow):
 		layout.addLayout(layout4)
 		layout.addLayout(layout5)
 
-		self.buttons.append(btn)
+		self.pointed.append(btn)
 
 		self.np_dlg.setLayout(layout)
 
@@ -162,7 +161,6 @@ class Creator(QMainWindow):
 
 		if allow:
 			self.np_dlg.hide()
-			# print(name, author, out)
 			self.hide()
 
 		try:
@@ -180,34 +178,16 @@ class Creator(QMainWindow):
 			sys.exit(1)
 
 	def fix_css(self):
-		# self.setStyleSheet('')
-		for i in self.titles:
+		for i in self.pointed:
 			try:
-				i.setStyleSheet('color: white; font-size: 36px;')
-				i.adjustSize()
-			except RuntimeError:
-				continue
-
-		for i in self.labels:
-			try:
-				i.setStyleSheet('color: white; font-size: 16px;')
-				i.adjustSize()
-			except RuntimeError:
-				continue
-
-		for i in self.lists:
-			try:
-				i.setStyleSheet('color: white; font-size: 14px; border: 1px solid white;')
-				i.adjustSize()
-			except RuntimeError:
-				continue
-
-		for i in self.buttons:
-			try:
-				i.setStyleSheet(
-					'color: white; background-color: rgb(51, 51, 51); font-size: 16px; border: 3px solid rgb(51, 51, 51);')
-				i.adjustSize()
 				i.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+				i.adjustSize()
+			except RuntimeError:
+				continue
+
+		for i in self.adjusted:
+			try:
+				i.adjustSize()
 			except RuntimeError:
 				continue
 
@@ -217,6 +197,8 @@ class Creator(QMainWindow):
 		QCheckBox::indicator::checked {background-color: rgba(90, 255, 90, 0.5); border-radius: 3px;}
 		QLineEdit:disabled {color: gray; font-size: 14px; border: 1px solid gray;}
 		QLineEdit:enabled {color: white; font-size: 14px; border: 1px solid white;}
+		QPushButton {color: white; background-color: rgb(51, 51, 51); font-size: 16px; border: 3px solid rgb(51, 51, 51);}
+		QLabel {color: white; font-size: 16px;}
 		
 """)
 
@@ -240,9 +222,9 @@ class Editor(QWidget):
 
 			self.mem_data = {
 				"info": {"name": name, "authors": author.split(", "), "out": "out/"},
-				"scenes": [{"title": "Scene 1", "buttons": [["Go to scene 2", 2], ["Go to scene 3", 3]]},
-						   {"title": "Scene 2", "buttons": [["Go to scene 1", 1], ["Go to scene 3", 3]]},
-						   {"title": "Scene 3", "buttons": [["Go to scene 1", 1], ["Go to scene 2", 2]]}
+				"scenes": [{"title": "Scene 1", "pointed": [["Go to scene 2", 2], ["Go to scene 3", 3]]},
+						   {"title": "Scene 2", "pointed": [["Go to scene 1", 1], ["Go to scene 3", 3]]},
+						   {"title": "Scene 3", "pointed": [["Go to scene 1", 1], ["Go to scene 2", 2]]}
 						   ]
 			}
 
@@ -371,9 +353,9 @@ class Editor(QWidget):
 		self.titles.append(lab)
 		throw_away = 0
 		num = 0
-		for i1000 in range(len(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"])):
+		for i1000 in range(len(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["pointed"])):
 			try:
-				btn = QPushButton(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][i1000][0])
+				btn = QPushButton(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["pointed"][i1000][0])
 				btn.clicked.connect(
 					lambda throw_away, btn=btn, num=num: self.btn_editor(btn, self.scenes_widget.currentIndex(), num))
 				self.preview.append(btn)
@@ -455,13 +437,13 @@ class Editor(QWidget):
 			self.scenes_widget.setCurrentIndex(last_scene)
 
 	def remove_btn(self, value):
-		del self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][value]
+		del self.mem_data["scenes"][self.scenes_widget.currentIndex()]["pointed"][value]
 		self.save()
 		self.build_preview()
 		self.show()
 
 	def change_btn_text(self, button: int, update):
-		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][button][0] = update
+		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["pointed"][button][0] = update
 		self.save()
 
 	def change_btn_note(self, button: int, note):
@@ -469,7 +451,7 @@ class Editor(QWidget):
 		self.save()
 
 	def change_btn_exec(self, button: int, exec_: int):
-		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][button][1] = exec_ + 1
+		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["pointed"][button][1] = exec_ + 1
 		self.save()
 
 	def change_label_text(self, text):
@@ -478,7 +460,7 @@ class Editor(QWidget):
 
 	def add_scene(self):
 		self.mem_data["scenes"].append(
-			{"title": "Scene " + str(self.scenes_widget.count() + 1), "buttons": [["Button 1", 1], ["Button 2", 1]]})
+			{"title": "Scene " + str(self.scenes_widget.count() + 1), "pointed": [["Button 1", 1], ["Button 2", 1]]})
 		self.editor_data["scenes"].append([{"notes": ""}, {"notes": ""}])
 		self.save()
 
@@ -486,7 +468,7 @@ class Editor(QWidget):
 		self.scenes_widget.setCurrentIndex(self.scenes_widget.count() - 1)
 
 	def add_button(self):
-		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"].append(["Button", 1])
+		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["pointed"].append(["Button", 1])
 		self.editor_data["scenes"][self.scenes_widget.currentIndex()].append({"notes": ""})
 
 		self.save()
@@ -554,7 +536,7 @@ class ButtonEditor(QDialog):
 		self.scenes_widget = QComboBox(self)
 		for i in range(len(memory["scenes"])):
 			self.scenes_widget.insertItem(i, f"Go to {i + 1}")
-		self.scenes_widget.setCurrentIndex(self.mem["scenes"][scene_id]["buttons"][btn_id][1])
+		self.scenes_widget.setCurrentIndex(self.mem["scenes"][scene_id]["pointed"][btn_id][1])
 		lines.append(self.scenes_widget)
 
 		message3 = QLabel("Notes:")
