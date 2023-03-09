@@ -183,6 +183,8 @@ class Creator(QMainWindow):
 			sys.exit(1)
 
 	def fix_css(self):
+		self.setStyleSheet(helper.generate_stylesheet(json.load(open("crys/storage/settings.json"))))
+
 		for i in self.pointed:
 			try:
 				i.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -195,17 +197,6 @@ class Creator(QMainWindow):
 				i.adjustSize()
 			except RuntimeError:
 				continue
-
-		self.setStyleSheet("""
-		QWidget { background-color: rgb(37, 37, 37); } 
-		QCheckBox::indicator:unchecked {background-color: rgba(255, 90, 90, 0.5); border-radius: 3px;} 
-		QCheckBox::indicator::checked {background-color: rgba(90, 255, 90, 0.5); border-radius: 3px;}
-		QLineEdit:disabled {color: gray; font-size: 14px; border: 1px solid gray;}
-		QLineEdit:enabled {color: white; font-size: 14px; border: 1px solid white;}
-		QPushButton {color: white; background-color: rgb(51, 51, 51); font-size: 16px; border: 3px solid rgb(51, 51, 51);}
-		QLabel {color: white; font-size: 16px;}
-		
-""")
 
 
 class Editor(QWidget):
@@ -586,7 +577,11 @@ class SettingsWindow(QTabWidget):
 		self.tab1.setLayout(layout)
 
 	def build_tab2UI(self):
-		layout = QHBoxLayout()
+		layout = QVBoxLayout()
+		layout1 = QHBoxLayout()
+		prev_layout = QVBoxLayout()
+		layout.addLayout(layout1)
+		layout.addLayout(prev_layout)
 		label1 = QLabel("Theme: ")
 		self.selector3 = QComboBox(self)
 		self.selector3.insertItem(0, "Midnight")
@@ -596,10 +591,20 @@ class SettingsWindow(QTabWidget):
 		self.selector3.insertItem(4, "Sync")
 		self.selector3.setCurrentIndex(self.settings["theme"][0])
 
+		prev2 = QPushButton("Preview")
+		prev3 = QComboBox()
+		prev3.addItem("Preview 1")
+		prev3.addItem("Preview 2")
+		prev4 = QLineEdit()
+		prev4.setText("Preview")
+		prev_layout.addWidget(prev2)
+		prev_layout.addWidget(prev3)
+		prev_layout.addWidget(prev4)
+
 		self.selector3.currentIndexChanged.connect(lambda: self.save())
 
-		layout.addWidget(label1)
-		layout.addWidget(self.selector3)
+		layout1.addWidget(label1)
+		layout1.addWidget(self.selector3)
 
 		self.setTabText(1, "Color and themes")
 		self.tab2.setLayout(layout)
@@ -706,17 +711,8 @@ class ButtonEditor(QDialog):
 
 		self.setFixedSize(800, 300)
 
-		for label in labels:
-			label.setStyleSheet("color: white; font-size: 16px;")
-			label.adjustSize()
-
-		for line in lines:
-			line.setStyleSheet("color: white; font-size: 12px; border: 1px solid white;")
-			line.adjustSize()
-
-		for button in buttons:
-			button.setStyleSheet("color: white; font-size: 12px; border: 1px solid white;")
-			button.adjustSize()
+	def fix_css(self):
+		self.setStyleSheet(helper.generate_stylesheet(json.load(open("crys/storage/settings.json", "r"))))
 
 	def remove_btn_clicked(self):
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]), self.mem["info"]["out"]).remove_btn(
