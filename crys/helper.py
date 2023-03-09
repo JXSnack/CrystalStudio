@@ -4,7 +4,7 @@ import subprocess
 
 from crys.crystal import *
 
-version = "1.1.0-SNAPSHOT [public-02]"
+version = "1.0.0"
 
 def open_file(path: str) -> None:
 	if platform.system() == "Windows":
@@ -27,4 +27,3 @@ def translate_builder(text: str) -> BuilderType:
 
 def install_requirements() -> None:
 	os.system("python3 -m pip install PyQt6")
-	os.system("python3 -m pip install requests")
