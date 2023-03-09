@@ -1,10 +1,11 @@
+import json
 import os
 import platform
 import subprocess
 
 from crys.crystal import *
 
-version = "1.1.0-SNAPSHOT [public-09]"
+version = "1.1.0-SNAPSHOT [public-10]"
 
 def open_file(path: str) -> None:
 	if platform.system() == "Windows":
@@ -30,7 +31,12 @@ def install_requirements() -> None:
 	os.system("python3 -m pip install requests")
 
 
-def generate_stylesheet(settings: dict) -> str:
+def get_settings() -> dict:
+	return json.load(open("crys/storage/settings.json", "r"))
+
+def generate_stylesheet() -> str:
+	settings = get_settings()
+
 	rv = "".join(open("crys/storage/themes/" + settings["theme"][1] + ".theme", "r").readlines()) # rv means return value
 	rv+= " QTabBar::tab {font-size: " + str(int(16*settings["text_scale"][1])) + "px;}"
 	rv+= " QLabel {font-size: " + str(int(16*settings["text_scale"][1])) + "px;}"
@@ -38,5 +44,6 @@ def generate_stylesheet(settings: dict) -> str:
 	rv+= " QComboBox {font-size: " + str(int(16*settings["text_scale"][1])) + "px;}"
 	rv+= " QLineEdit {font-size: " + str(int(14*settings["text_scale"][1])) + "px;}"
 	rv+= " QPushButton {font-size: " + str(int(16*settings["text_scale"][1])) + "px;}"
+	rv+= " QTextEdit {font-size: " + str(int(14*settings["text_scale"][1])) + "px;}"
 
 	return rv

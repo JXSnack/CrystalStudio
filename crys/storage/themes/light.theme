@@ -3,11 +3,13 @@ QCheckBox::indicator:unchecked {background-color: rgba(255, 90, 90, 0.5); border
 QCheckBox::indicator::checked {background-color: rgba(90, 255, 90, 0.5); border-radius: 3px;}
 QLineEdit:disabled {color: gray;  border: 1px solid gray;}
 QLineEdit:enabled {color: black;  border: 1px solid black;}
+QTextEdit:disabled {color: gray; border: 1px solid gray;}
+QTextEdit:enabled {color: white; border: 1px solid black;}
 
 QPushButton {color: black; background-color: rgb(190, 190, 190);  border: 3px solid rgb(190, 190, 190);}
 QPushButton:hover {background-color: rgb(200, 200, 200);}
 
-QLabel {color: black; }
+QLabel {color: black; background: transparent;}
 
 QTabBar::tab {background: rgb(190, 190, 190); border: 3px solid rgb(190, 190, 190); padding: 5px; color: black; }
 QTabBar::tab:selected {background: rgb(200, 200, 200); margin-bottom: -1px;}

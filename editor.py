@@ -24,6 +24,8 @@ class Creator(QMainWindow):
 		self.adjusted = []
 		self.pointed = []
 
+		self.settings = helper.get_settings()
+
 		self.w = None  # no extra window yet
 
 		self.build_ui()
@@ -40,23 +42,25 @@ class Creator(QMainWindow):
 		self.pic = QLabel(self)
 		self.pic.setPixmap(QPixmap("crys/storage/icon.png"))
 		self.pic.setScaledContents(True)
-		self.pic.setGeometry(10, 0, int(128 / 2), int(128 / 2))
+		self.pic.setGeometry(int(10 * self.settings["ui_scale"][1]), int(1 * self.settings["ui_scale"][1]), int(64 * self.settings["text_scale"][1]), int(64 * self.settings["text_scale"][1]))
 
 		self.anl = QLabel(self)  # anl means app_name_label
-		self.anl.move(76, 6)
+		self.anl.move(int(76 * self.settings["ui_scale"][1]), int(10 * self.settings["ui_scale"][1]))
 		self.anl.setText("CrystalStudio")
-		self.anl.setStyleSheet("color: white; font-size: 14px; background-color: none;")
+		self.anl.setStyleSheet(helper.generate_stylesheet())
+		self.anl.adjustSize()
 
 		self.avl = QLabel(self)  # avl means app_version_label
 		self.avl.setText(helper.version)
 		self.avl.adjustSize()
-		self.avl.move(76, 31)
-		self.avl.setStyleSheet("color: gray; font-size: 12px; background-color: none;")
+		self.avl.move(int(76 * self.settings["ui_scale"][1]), int(31 * self.settings["ui_scale"][1]))
+		self.avl.setStyleSheet(helper.generate_stylesheet() + " QLabel {color: gray; font-size: " + str(int(12 * self.settings["text_scale"][1])) + "px;}")
+		self.avl.adjustSize()
 
 		new_project = QPushButton("New project", self)
 		new_project.clicked.connect(self.new_project_fnc)
 		new_project.setToolTip("Create a new project")
-		new_project.move(25, 80)
+		new_project.move(int(25 * self.settings["ui_scale"][1]), int(80 * self.settings["ui_scale"][1]))
 
 		self.pointed.append(new_project)
 		self.adjusted.append(new_project)
@@ -64,20 +68,20 @@ class Creator(QMainWindow):
 		open_project = QPushButton("Open Project", self)
 		open_project.setToolTip("Open a saved project")
 		open_project.clicked.connect(self.open_project_fnc)
-		open_project.move(25, 115)
+		open_project.move(int(25 * self.settings["ui_scale"][1]), int(110 * self.settings["ui_scale"][1]))
 		self.pointed.append(open_project)
 		self.adjusted.append(open_project)
 
 		setting_btn = QPushButton("Settings", self)
 		setting_btn.setToolTip("Open settings")
 		setting_btn.clicked.connect(lambda: self.open_settings())
-		setting_btn.move(25, 150)
+		setting_btn.move(int(25 * self.settings["ui_scale"][1]), int(140 * self.settings["ui_scale"][1]))
 		self.pointed.append(setting_btn)
 		self.adjusted.append(setting_btn)
 
 		self.setStatusBar(QStatusBar(self))
 
-		self.setFixedSize(960, 540)
+		self.setFixedSize(int(960 * self.settings["ui_scale"][1]), int(540 * self.settings["ui_scale"][1]))
 
 		self.fix_css()
 
@@ -112,6 +116,7 @@ class Creator(QMainWindow):
 		input_out.setText("out/")
 		input_out.setDisabled(True)
 		checkbox = QCheckBox(self.np_dlg)
+		# checkbox.check(int(20 * self.settings["ui_scale"][1]), int(20 * self.settings["ui_scale"][1]))
 
 		btn = QPushButton(self.np_dlg)
 		btn.setText("Create project")
@@ -135,7 +140,7 @@ class Creator(QMainWindow):
 
 		self.np_dlg.setLayout(layout)
 
-		self.np_dlg.setFixedSize(480, 270)
+		self.np_dlg.setFixedSize(int(480 * self.settings["ui_scale"][1]), int(270 * self.settings["ui_scale"][1]))
 
 		checkbox.toggled.connect(input_out.setEnabled)
 		self.fix_css()
@@ -168,22 +173,22 @@ class Creator(QMainWindow):
 			self.np_dlg.hide()
 			self.hide()
 
-		try:
-			os.mkdir("editor/" + name)
-			os.mkdir("editor/" + name + "/" + out)
+			try:
+				os.mkdir("editor/" + name)
+				os.mkdir("editor/" + name + "/" + out)
 
-			if self.w is None:
-				self.w = Editor(name, author, out)
-			self.w.show()
+				if self.w is None:
+					self.w = Editor(name, author, out)
+				self.w.show()
 
-			self.hide()
+				self.hide()
 
-		except FileExistsError as err:
-			print("ERROR:", err, "| Please pick a different name.")
-			sys.exit(1)
+			except FileExistsError as err:
+				print("ERROR:", err, "| Please pick a different name.")
+				sys.exit(1)
 
 	def fix_css(self):
-		self.setStyleSheet(helper.generate_stylesheet(json.load(open("crys/storage/settings.json"))))
+		self.setStyleSheet(helper.generate_stylesheet())
 
 		for i in self.pointed:
 			try:
@@ -217,7 +222,7 @@ class Editor(QWidget):
 			file = open(f"editor/{name}/save.json", "w")
 
 			self.mem_data = {
-				"info": {"name": name, "authors": author.split(", "), "out": "out/"},
+				"info": {"name": name, "authors": author.split(", "), "out": self.out},
 				"scenes": [{"title": "Scene 1", "buttons": [["Go to scene 2", 2], ["Go to scene 3", 3]]},
 						   {"title": "Scene 2", "buttons": [["Go to scene 1", 1], ["Go to scene 3", 3]]},
 						   {"title": "Scene 3", "buttons": [["Go to scene 1", 1], ["Go to scene 2", 2]]}
@@ -509,11 +514,7 @@ class SettingsWindow(QTabWidget):
 			self.settings = json.load(settings_file)
 		except json.decoder.JSONDecodeError:
 			file = open(self.settings_filepath, "w")
-			file.write("""{
-	"ui_scale": [1, 1],
-	"text_scale": [1, 1],
-	"theme": [1, "dark"]
-}""")
+			json.dump({"ui_scale": [1, 1.0], "text_scale": [1, 1.0], "theme": [1, "dark"]}, file)
 			file.close()
 			self.settings = json.load(settings_file)
 			print("Settings were corrupted. Settings have been reset")
@@ -557,21 +558,8 @@ class SettingsWindow(QTabWidget):
 
 		self.selector1.currentIndexChanged.connect(lambda: self.save())
 
-		label2 = QLabel("Text scale: ")
-		self.selector2 = QComboBox(self)
-		self.selector2.insertItem(0, "2 (Large)")
-		self.selector2.insertItem(1, "1 (Default)")
-		self.selector2.insertItem(2, "0.5 (Small)")
-		self.selector2.insertItem(3, "0.25 (Mini)")
-		self.selector2.setCurrentIndex(self.settings["text_scale"][0])
-
-		self.selector2.currentIndexChanged.connect(lambda: self.save())
-
 		layout1.addWidget(label1)
 		layout1.addWidget(self.selector1)
-
-		layout2.addWidget(label2)
-		layout2.addWidget(self.selector2)
 
 		self.setTabText(0, "General settings")
 		self.tab1.setLayout(layout)
@@ -625,9 +613,10 @@ class SettingsWindow(QTabWidget):
 	def save(self):
 		self.settings["theme"] = [self.selector3.currentIndex(), self.selector3.currentText().split()[0].lower()]
 		self.settings["ui_scale"] = [self.selector1.currentIndex(), float(self.selector1.currentText().split()[0].lower())]
-		self.settings["text_scale"] = [self.selector2.currentIndex(), float(self.selector2.currentText().split()[0].lower())]
+		self.settings["text_scale"] = self.settings["ui_scale"]
 		settings_file = open(self.settings_filepath, "w")
 		json.dump(self.settings, settings_file)
+		settings_file.close()
 
 		self.fix_css()
 
@@ -637,7 +626,7 @@ class SettingsWindow(QTabWidget):
 		self.hide()
 
 	def fix_css(self):
-		self.setStyleSheet(helper.generate_stylesheet(self.settings))
+		self.setStyleSheet(helper.generate_stylesheet())
 		self.setFixedSize(int(self.settings["ui_scale"][1]*540), int(self.settings["ui_scale"][1]*640))
 
 
@@ -648,6 +637,8 @@ class ButtonEditor(QDialog):
 		labels = []
 		lines = []
 		buttons = []
+
+		self.settings = helper.get_settings()
 
 		self.editor = editor
 		self.mem = memory
@@ -673,7 +664,7 @@ class ButtonEditor(QDialog):
 		self.scenes_widget = QComboBox(self)
 		for i in range(len(memory["scenes"])):
 			self.scenes_widget.insertItem(i, f"Go to {i + 1}")
-		self.scenes_widget.setCurrentIndex(self.mem["scenes"][scene_id]["buttons"][btn_id][1])
+		self.scenes_widget.setCurrentIndex(self.mem["scenes"][scene_id]["buttons"][btn_id][1] - 1)
 		lines.append(self.scenes_widget)
 
 		message3 = QLabel("Notes:")
@@ -709,10 +700,12 @@ class ButtonEditor(QDialog):
 
 		self.setLayout(self.layout)
 
-		self.setFixedSize(800, 300)
+		self.fix_css()
+
+		self.setFixedSize(int(800 * self.settings["ui_scale"][1]), int(300 * self.settings["ui_scale"][1]))
 
 	def fix_css(self):
-		self.setStyleSheet(helper.generate_stylesheet(json.load(open("crys/storage/settings.json", "r"))))
+		self.setStyleSheet(helper.generate_stylesheet())
 
 	def remove_btn_clicked(self):
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]), self.mem["info"]["out"]).remove_btn(
@@ -781,19 +774,12 @@ class TextEditor(QDialog):
 
 		self.setLayout(self.layout)
 
-		self.setFixedSize(800, 300)
+		self.setFixedSize(int(800 * self.settings["ui_scale"][1]), int(300 * self.settings["ui_scale"][1]))
 
-		for label in labels:
-			label.setStyleSheet("color: white; font-size: 16px;")
-			label.adjustSize()
+		self.fix_css()
 
-		for line in lines:
-			line.setStyleSheet("color: white; font-size: 12px; border: 1px solid white;")
-			line.adjustSize()
-
-		for button in buttons:
-			button.setStyleSheet("color: white; font-size: 12px; border: 1px solid white;")
-			button.adjustSize()
+	def fix_css(self):
+		self.setStyleSheet(helper.generate_stylesheet())
 
 	def save_btn_clicked(self):
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
@@ -815,6 +801,8 @@ class BuildMenu(QDialog):
 		self.labels = []
 		self.lines = []
 		self.buttons = []
+
+		self.settings = helper.get_settings()
 
 		self.editor = editor
 		self.mem = memory
@@ -850,19 +838,12 @@ class BuildMenu(QDialog):
 
 		self.setLayout(self.layout)
 
-		self.setFixedSize(800, 300)
+		self.setFixedSize(int(800 * self.settings["ui_scale"][1]), int(300 * self.settings["ui_scale"][1]))
 
-		for label in self.labels:
-			label.setStyleSheet("color: white; font-size: 16px;")
-			label.adjustSize()
+		self.fix_css()
 
-		for line in self.lines:
-			line.setStyleSheet("color: white; font-size: 12px; border: 1px solid white;")
-			line.adjustSize()
-
-		for button in self.buttons:
-			button.setStyleSheet("color: white; font-size: 12px; border: 1px solid white;")
-			button.adjustSize()
+	def fix_css(self):
+		self.setStyleSheet(helper.generate_stylesheet())
 
 	def build_btn_clicked(self):
 		try:
@@ -878,10 +859,6 @@ class BuildMenu(QDialog):
 
 	def cancel(self):
 		self.hide()
-
-
-# Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
-# 	   self.mem["info"]["out"]).show()
 
 
 if __name__ == "__main__":
