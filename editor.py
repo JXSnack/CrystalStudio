@@ -212,6 +212,8 @@ class Editor(QWidget):
 		self.author = author
 		self.out = out
 
+		self.settings = helper.get_settings()
+
 		self.preview = []
 
 		try:
@@ -254,45 +256,49 @@ class Editor(QWidget):
 		self.build_ui()
 
 	def build_ui(self):
+		self.fix_css()
+
 		self.layout = QGridLayout(self)
-		self.layout.setContentsMargins(200, 200, 200, 200)
+		self.layout.setContentsMargins(int(200 * self.settings["ui_scale"][1]), int(200 * self.settings["ui_scale"][1]), int(200 * self.settings["ui_scale"][1]), int(200 * self.settings["ui_scale"][1]))
 
 		self.setLayout(self.layout)
 
-		self.setFixedSize(1920, 1080)
+		self.setFixedSize(int(1920 * self.settings["ui_scale"][1]), int(1080 * self.settings["ui_scale"][1]))
 		self.setWindowTitle("CrystalStudio - " + self.name)
-
-		self.labels = []
-		self.lists = []
-		self.buttons = []
-		self.titles = []
 
 		add_scene_btn = QPushButton(self)
 		add_scene_btn.setText("+")
 		add_scene_btn.clicked.connect(lambda: self.add_scene())
+		add_scene_btn.adjustSize()
 		add_scene_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
 		add_button_btn = QPushButton(self)
 		add_button_btn.setText("+ Button")
 		add_button_btn.clicked.connect(lambda: self.add_button())
+		add_button_btn.adjustSize()
 		add_button_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
 		remove_scene_btn = QPushButton(self)
 		remove_scene_btn.setText("-")
 		remove_scene_btn.clicked.connect(lambda: self.remove_scene())
+		remove_scene_btn.adjustSize()
 		remove_scene_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
 		build_btn = QPushButton(self)
 		build_btn.setText("Build game")
+		build_btn.adjustSize()
 		build_btn.clicked.connect(lambda: BuildMenu(self, self.mem_data, self.editor_data).show())
 
 		self.save_btn = QPushButton(self)
 		self.save_btn.setText("Save")
+		self.save_btn.adjustSize()
 
 		name = QLabel(self)
 		name.setText("Editing " + self.name + " (" + self.out + ")")
 		authors = QLabel(self)
 		authors.setText("Made by " + self.author)
+		authors.adjustSize()
+		name.adjustSize()
 
 		self.scenes_widget = QComboBox(self)
 		self.refresh_scenes_widget()
@@ -301,41 +307,33 @@ class Editor(QWidget):
 
 		self.scenes_widget.setCurrentIndex(self.editor_data["current_scene"])
 
-		self.lists.append(self.scenes_widget)
 
-		self.labels.append(name)
-		self.labels.append(authors)
-
-		self.buttons.append(build_btn)
-		self.buttons.append(self.save_btn)
-
-		name.move(10, 5)
-		authors.move(10, 29)
-		self.scenes_widget.move(1780, 10)
-		self.scenes_widget.setFixedSize(130, 40)
-		add_scene_btn.move(1877, 60)
+		name.move(int(10 * self.settings["ui_scale"][1]), int(5 * self.settings["ui_scale"][1]))
+		authors.move(int(10 * self.settings["ui_scale"][1]), int(29 * self.settings["ui_scale"][1]))
+		self.scenes_widget.move(int(1780 * self.settings["ui_scale"][1]), int(10 * self.settings["ui_scale"][1]))
+		self.scenes_widget.setFixedSize(int(130 * self.settings["ui_scale"][1]), int(40 * self.settings["ui_scale"][1]))
+		add_scene_btn.move(int(1877 * self.settings["ui_scale"][1]), int(60 * self.settings["ui_scale"][1]))
 		add_scene_btn.setStyleSheet(
-			'color: white; background-color: rgb(59, 171, 130); font-size: 16px; border: 1px solid rgb(59, 171, 130);')
-		add_scene_btn.setFixedSize(32, 32)
+			'color: white; background-color: rgb(59, 171, 130); border: 1px solid rgb(59, 171, 130);')
+		add_scene_btn.setFixedSize(int(32 * self.settings["ui_scale"][1]), int(32 * self.settings["ui_scale"][1]))
 
-		add_button_btn.move(1780, 100)
-		add_button_btn.setFixedSize(130, 40)
+		add_button_btn.move(int(1780 * self.settings["ui_scale"][1]), int(100 * self.settings["ui_scale"][1]))
+		add_button_btn.setFixedSize(int(130 * self.settings["ui_scale"][1]), int(40 * self.settings["ui_scale"][1]))
 		add_button_btn.setStyleSheet(
-			'color: white; background-color: rgb(59, 171, 130); font-size: 16px; border: 1px solid rgb(59, 171, 130);')
+			'color: white; background-color: rgb(59, 171, 130); border: 1px solid rgb(59, 171, 130);')
 
-		remove_scene_btn.move(1780, 60)
+		remove_scene_btn.move(int(1780 * self.settings["ui_scale"][1]), int(60 * self.settings["ui_scale"][1]))
 		remove_scene_btn.setStyleSheet(
-			'color: white; background-color: rgb(179, 0, 0); font-size: 16px; border: 1px solid rgb(179, 0, 0);')
-		remove_scene_btn.setFixedSize(32, 32)
+			'color: white; background-color: rgb(179, 0, 0); border: 1px solid rgb(179, 0, 0);')
+		remove_scene_btn.setFixedSize(int(32 * self.settings["ui_scale"][1]), int(32 * self.settings["ui_scale"][1]))
 
-		self.save_btn.move(1740, 1020)
-		self.save_btn.setFixedSize(60, 40)
-		build_btn.move(1810, 1020)
-		build_btn.setFixedSize(100, 40)
+		self.save_btn.move(int(1740 * self.settings["ui_scale"][1]), int(1020 * self.settings["ui_scale"][1]))
+		self.save_btn.setFixedSize(int(60 * self.settings["ui_scale"][1]), int(40 * self.settings["ui_scale"][1]))
+		build_btn.move(int(1810 * self.settings["ui_scale"][1]), int(1020 * self.settings["ui_scale"][1]))
+		build_btn.setFixedSize(int(100 * self.settings["ui_scale"][1]), int(40 * self.settings["ui_scale"][1]))
 
 		self.save_btn.clicked.connect(lambda: self.save())
 
-		self.fix_css()
 		self.build_preview()
 
 	def build_preview(self):
@@ -349,9 +347,10 @@ class Editor(QWidget):
 		self.preview = []
 		# print(self.preview)
 		lab = QLabel(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["title"])
+		lab.setStyleSheet("font-size: " + str(int(32 * self.settings["ui_scale"][1])) + "px;}")
+		lab.adjustSize()
 		self.preview.append(lab)
 		self.layout.addWidget(lab, 0, 0)
-		self.titles.append(lab)
 		throw_away = 0
 		num = 0
 		for i1000 in range(len(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"])):
@@ -361,7 +360,6 @@ class Editor(QWidget):
 					lambda throw_away, btn=btn, num=num: self.btn_editor(btn, self.scenes_widget.currentIndex(), num))
 				self.preview.append(btn)
 				self.layout.addWidget(btn)
-				self.buttons.append(btn)
 				num += 1
 			except IndexError:
 				continue
@@ -374,34 +372,8 @@ class Editor(QWidget):
 
 	def fix_css(self):
 		self.setStyleSheet('background-color: rgb(37, 37, 37);')
-		for i in self.titles:
-			try:
-				i.setStyleSheet('color: white; font-size: 36px;')
-				i.adjustSize()
-			except RuntimeError:
-				continue
 
-		for i in self.labels:
-			try:
-				i.setStyleSheet('color: white; font-size: 16px;')
-				i.adjustSize()
-			except RuntimeError:
-				continue
-
-		for i in self.lists:
-			try:
-				i.setStyleSheet('color: white; background-color: gray; font-size: 18px; border: 0px solid gray;')
-				i.adjustSize()
-			except RuntimeError:
-				continue
-
-		for i in self.buttons:
-			try:
-				i.setStyleSheet('color: white; background-color: gray; font-size: 16px; border: 1px solid gray;')
-				i.adjustSize()
-				i.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-			except RuntimeError:
-				continue
+		self.setStyleSheet(helper.generate_stylesheet())
 
 	def btn_editor(self, btn, scene_id, btn_id):
 		self.hide()
@@ -741,6 +713,8 @@ class TextEditor(QDialog):
 		self.mem = memory
 		self.scene_id = scene_id
 		self.label = label
+
+		self.settings = helper.get_settings()
 
 		self.setWindowTitle(f"Editing text in scene {self.scene_id}")
 
