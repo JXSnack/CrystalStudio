@@ -514,7 +514,18 @@ class SettingsWindow(QTabWidget):
 		super(SettingsWindow, self).__init__(parent)
 		self.settings_filepath = "crys/storage/settings.json"
 		settings_file = open(self.settings_filepath, "r")
-		self.settings = json.load(settings_file)
+		try:
+			self.settings = json.load(settings_file)
+		except json.decoder.JSONDecodeError:
+			file = open(self.settings_filepath, "w")
+			file.write("""{
+	"ui_scale": 1,
+	"text_scale": 1,
+	"theme": "dark"
+}""")
+			file.close()
+			self.settings = json.load(settings_file)
+			print("Settings were corrupted. Settings have been reset")
 
 		self.setFixedSize(540, 640)
 
@@ -546,26 +557,26 @@ class SettingsWindow(QTabWidget):
 		layout.addLayout(layout1)
 		layout.addLayout(layout2)
 		label1 = QLabel("UI scale: ")
-		selector1 = QComboBox(self)
-		selector1.insertItem(0, "0.5 (Large)")
-		selector1.insertItem(1, "1 (Default)")
-		selector1.insertItem(2, "1.5 (Small)")
-		selector1.insertItem(3, "2 (Mini)")
-		selector1.setCurrentIndex(1)
+		self.selector1 = QComboBox(self)
+		self.selector1.insertItem(0, "0.5 (Large)")
+		self.selector1.insertItem(1, "1 (Default)")
+		self.selector1.insertItem(2, "1.5 (Small)")
+		self.selector1.insertItem(3, "2 (Mini)")
+		self.selector1.setCurrentIndex(1)
 
 		label2 = QLabel("Text scale: ")
-		selector2 = QComboBox(self)
-		selector2.insertItem(0, "0.5 (Large)")
-		selector2.insertItem(1, "1 (Default)")
-		selector2.insertItem(2, "1.5 (Small)")
-		selector2.insertItem(3, "2 (Mini)")
-		selector2.setCurrentIndex(1)
+		self.selector2 = QComboBox(self)
+		self.selector2.insertItem(0, "0.5 (Large)")
+		self.selector2.insertItem(1, "1 (Default)")
+		self.selector2.insertItem(2, "1.5 (Small)")
+		self.selector2.insertItem(3, "2 (Mini)")
+		self.selector2.setCurrentIndex(1)
 
 		layout1.addWidget(label1)
-		layout1.addWidget(selector1)
+		layout1.addWidget(self.selector1)
 
 		layout2.addWidget(label2)
-		layout2.addWidget(selector2)
+		layout2.addWidget(self.selector2)
 
 		self.setTabText(0, "General settings")
 		self.tab1.setLayout(layout)
@@ -573,15 +584,17 @@ class SettingsWindow(QTabWidget):
 	def build_tab2UI(self):
 		layout = QHBoxLayout()
 		label1 = QLabel("Theme: ")
-		selector1 = QComboBox(self)
-		selector1.insertItem(0, "Midnight")
-		selector1.insertItem(1, "Dark (Default)")
-		selector1.insertItem(2, "Light")
-		selector1.insertItem(3, "Eyeburn")
-		selector1.setCurrentIndex(1)
+		self.selector3 = QComboBox(self)
+		self.selector3.insertItem(0, "Midnight")
+		self.selector3.insertItem(1, "Dark (Default)")
+		self.selector3.insertItem(2, "Light")
+		self.selector3.insertItem(3, "Eyeburn")
+		self.selector3.setCurrentIndex(1)
+
+		self.selector3.currentIndexChanged.connect(lambda: self.save())
 
 		layout.addWidget(label1)
-		layout.addWidget(selector1)
+		layout.addWidget(self.selector3)
 
 		self.setTabText(1, "Color and themes")
 		self.tab2.setLayout(layout)
@@ -589,9 +602,9 @@ class SettingsWindow(QTabWidget):
 	def build_tab3UI(self):
 		layout = QHBoxLayout()
 
-		self.save_btn = QPushButton("Apply and save")
+		self.save_btn = QPushButton("Save")
 		self.save_btn.clicked.connect(lambda: self.save())
-		self.exit_btn = QPushButton("Apply, save and exit")
+		self.exit_btn = QPushButton("Save and exit")
 		self.exit_btn.clicked.connect(lambda: self.exit())
 		layout.addWidget(self.save_btn)
 		layout.addWidget(self.exit_btn)
@@ -600,8 +613,11 @@ class SettingsWindow(QTabWidget):
 		self.tab3.setLayout(layout)
 
 	def save(self):
+		self.settings["theme"] = self.selector3.currentText().split()[0].lower()
 		settings_file = open(self.settings_filepath, "w")
 		json.dump(self.settings, settings_file)
+
+		self.fix_css()
 
 	def exit(self):
 		self.save()

@@ -1,0 +1,15 @@
+QWidget { background-color: white }
+QCheckBox::indicator:unchecked {background-color: rgba(255, 90, 90, 0.5); border-radius: 3px;}
+QCheckBox::indicator::checked {background-color: rgba(90, 255, 90, 0.5); border-radius: 3px;}
+QLineEdit:disabled {color: gray; font-size: 14px; border: 1px solid gray;}
+QLineEdit:enabled {color: gray; font-size: 14px; border: 1px solid gray;}
+
+QPushButton {color: gray; background-color: lightgray; font-size: 16px; border: 3px solid lightgray;}
+QPushButton:hover {background-color: white;}
+
+QLabel {color: gray; font-size: 16px;}
+
+QTabBar::tab {background: lightgray; border: 3px solid lightgray; padding: 5px; color: gray; font-size: 16px;}
+QTabBar::tab:selected {background: white; margin-bottom: -1px;}
+
+QComboBox {selection-background-color: white; selection-color: lightgray; color: gray; font-size: 16px; background-color: white; border: 1px solid gray; padding: 1px 0px 1px 20px;}
