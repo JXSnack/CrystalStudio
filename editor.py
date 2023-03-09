@@ -521,7 +521,7 @@ class SettingsWindow(QTabWidget):
 			file.write("""{
 	"ui_scale": 1,
 	"text_scale": 1,
-	"theme": "dark"
+	"theme": [1, "dark"]
 }""")
 			file.close()
 			self.settings = json.load(settings_file)
@@ -590,7 +590,7 @@ class SettingsWindow(QTabWidget):
 		self.selector3.insertItem(2, "Light")
 		self.selector3.insertItem(3, "Eyeburn")
 		self.selector3.insertItem(4, "Sync")
-		self.selector3.setCurrentIndex(1)
+		self.selector3.setCurrentIndex(self.settings["theme"][0])
 
 		self.selector3.currentIndexChanged.connect(lambda: self.save())
 
@@ -614,7 +614,7 @@ class SettingsWindow(QTabWidget):
 		self.tab3.setLayout(layout)
 
 	def save(self):
-		self.settings["theme"] = self.selector3.currentText().split()[0].lower()
+		self.settings["theme"] = [self.selector3.currentIndex(), self.selector3.currentText().split()[0].lower()]
 		settings_file = open(self.settings_filepath, "w")
 		json.dump(self.settings, settings_file)
 
@@ -626,7 +626,7 @@ class SettingsWindow(QTabWidget):
 		self.hide()
 
 	def fix_css(self):
-		self.setStyleSheet("".join(open("crys/storage/themes/" + self.settings["theme"] + ".theme", "r").readlines()))
+		self.setStyleSheet("".join(open("crys/storage/themes/" + self.settings["theme"][1] + ".theme", "r").readlines()))
 
 
 class ButtonEditor(QDialog):
