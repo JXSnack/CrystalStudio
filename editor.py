@@ -516,8 +516,6 @@ class SettingsWindow(QTabWidget):
 		settings_file = open(self.settings_filepath, "r")
 		self.settings = json.load(settings_file)
 
-		self.settings_file = open(self.settings_filepath, "w")
-
 		self.setFixedSize(540, 640)
 
 		self.build_ui()
@@ -602,9 +600,11 @@ class SettingsWindow(QTabWidget):
 		self.tab3.setLayout(layout)
 
 	def save(self):
-		self.settings_file.write(self.settings)
+		settings_file = open(self.settings_filepath, "w")
+		json.dump(self.settings, settings_file)
 
 	def exit(self):
+		self.save()
 		Creator().show()
 		self.hide()
 
