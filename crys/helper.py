@@ -27,3 +27,4 @@ def translate_builder(text: str) -> BuilderType:
 
 def install_requirements() -> None:
 	os.system("python3 -m pip install PyQt6")
+	os.system("python3 -m pip install requests")
