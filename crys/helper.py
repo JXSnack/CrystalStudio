@@ -5,7 +5,7 @@ import subprocess
 
 from crys.crystal import *
 
-version = "1.1.0-SNAPSHOT [public-11]"
+version = "1.1.0-SNAPSHOT [public-12]"
 
 def open_file(path: str) -> None:
 	if platform.system() == "Windows":
@@ -37,7 +37,10 @@ def get_settings() -> dict:
 def generate_stylesheet() -> str:
 	settings = get_settings()
 
+	custom_theme = settings["custom_theme"]
+
 	rv = "".join(open("crys/storage/themes/" + settings["theme"][1] + ".theme", "r").readlines()) # rv means return value
+	rv+=" " + custom_theme
 	rv+= " QTabBar::tab {font-size: " + str(int(16*settings["text_scale"][1])) + "px;}"
 	rv+= " QLabel {font-size: " + str(int(16*settings["text_scale"][1])) + "px;}"
 	rv+= " QComboBox {font-size: " + str(int(16*settings["text_scale"][1])) + "px;}"

@@ -486,7 +486,7 @@ class SettingsWindow(QTabWidget):
 			self.settings = json.load(settings_file)
 		except json.decoder.JSONDecodeError:
 			file = open(self.settings_filepath, "w")
-			json.dump({"ui_scale": [1, 1.0], "text_scale": [1, 1.0], "theme": [1, "dark"]}, file)
+			json.dump({"ui_scale": [1, 1.0], "text_scale": [1, 1.0], "theme": [1, "dark"], "custom_theme": ""}, file)
 			file.close()
 			self.settings = json.load(settings_file)
 			print("Settings were corrupted. Settings have been reset")
@@ -508,8 +508,6 @@ class SettingsWindow(QTabWidget):
 		self.build_tab2UI()
 		self.build_tab3UI()
 
-		self.save_btn.move(100, 100)
-
 		self.fix_css()
 
 		self.setWindowTitle("Settings")
@@ -526,12 +524,16 @@ class SettingsWindow(QTabWidget):
 		self.selector1.insertItem(1, "1 (Default)")
 		self.selector1.insertItem(2, "0.5 (Small)")
 		self.selector1.insertItem(3, "0.25 (Mini)")
+		self.selector1.insertItem(4, "Custom (Beta)")
 		self.selector1.setCurrentIndex(self.settings["ui_scale"][0])
 
 		self.selector1.currentIndexChanged.connect(lambda: self.save())
+		self.custom_size_wid = QLineEdit(str(self.settings["ui_scale"][1]))
+		self.custom_size_wid.textChanged.connect(lambda: self.save())
 
 		layout1.addWidget(label1)
 		layout1.addWidget(self.selector1)
+		layout1.addWidget(self.custom_size_wid)
 
 		self.setTabText(0, "General settings")
 		self.tab1.setLayout(layout)
@@ -539,10 +541,21 @@ class SettingsWindow(QTabWidget):
 	def build_tab2UI(self):
 		layout = QVBoxLayout()
 		layout1 = QHBoxLayout()
+		layout2 = QHBoxLayout()
+		layout3 = QVBoxLayout()
 		prev_layout = QVBoxLayout()
 		layout.addLayout(layout1)
+		layout.addLayout(layout2)
+		layout.addLayout(layout3)
 		layout.addLayout(prev_layout)
 		label1 = QLabel("Theme: ")
+		label2 = QLabel("Custom theme: ")
+		label3 = QLabel("\n\n\n\n\n\n\n")
+		layout3.addWidget(label3)
+		layout3.setAlignment(label3, Qt.AlignmentFlag.AlignCenter)
+		layout2.addWidget(label2)
+		self.custom_theme = QTextEdit()
+		layout2.addWidget(self.custom_theme)
 		self.selector3 = QComboBox(self)
 		self.selector3.insertItem(0, "Midnight")
 		self.selector3.insertItem(1, "Dark (Default)")
@@ -550,6 +563,8 @@ class SettingsWindow(QTabWidget):
 		self.selector3.insertItem(3, "Eyeburn")
 		self.selector3.insertItem(4, "Sync")
 		self.selector3.setCurrentIndex(self.settings["theme"][0])
+		self.custom_theme.setText(self.settings["custom_theme"])
+		self.custom_theme.textChanged.connect(lambda: self.save())
 
 		prev2 = QPushButton("Preview")
 		prev3 = QComboBox()
@@ -557,9 +572,12 @@ class SettingsWindow(QTabWidget):
 		prev3.addItem("Preview 2")
 		prev4 = QLineEdit()
 		prev4.setText("Preview")
+		prev5 = QTextEdit()
+		prev5.setText("Preview")
 		prev_layout.addWidget(prev2)
 		prev_layout.addWidget(prev3)
 		prev_layout.addWidget(prev4)
+		prev_layout.addWidget(prev5)
 
 		self.selector3.currentIndexChanged.connect(lambda: self.save())
 
@@ -584,8 +602,44 @@ class SettingsWindow(QTabWidget):
 
 	def save(self):
 		self.settings["theme"] = [self.selector3.currentIndex(), self.selector3.currentText().split()[0].lower()]
-		self.settings["ui_scale"] = [self.selector1.currentIndex(), float(self.selector1.currentText().split()[0].lower())]
-		self.settings["text_scale"] = self.settings["ui_scale"]
+		if not self.selector1.currentText().lower().startswith("custom"):
+			self.settings["ui_scale"] = [self.selector1.currentIndex(), float(self.selector1.currentText().split()[0].lower())]
+			self.settings["text_scale"] = self.settings["ui_scale"]
+		else:
+			if self.custom_size_wid.text().replace(".", "").isnumeric():
+				if not self.custom_size_wid.text().startswith(".") and not self.custom_size_wid.text().startswith("0"):
+					self.custom_size = float(self.custom_size_wid.text())
+
+					self.settings["ui_scale"] = [self.selector1.currentIndex(),
+												 float(self.custom_size)]
+					self.settings["text_scale"] = self.settings["ui_scale"]
+				elif self.custom_size_wid.text().startswith("0"):
+					splitted = self.custom_size_wid.text().split(".")
+					if splitted[0] is not None:
+						if not splitted[0].startswith("0"):
+							if splitted[0].isnumeric():
+								if splitted[1] is not None:
+									if splitted[1].isnumeric():
+										self.custom_size = float(self.custom_size_wid.text())
+
+										self.settings["ui_scale"] = [self.selector1.currentIndex(),
+																	 float(self.custom_size)]
+										self.settings["text_scale"] = self.settings["ui_scale"]
+						elif splitted[0].startswith("0"):
+							if splitted[0].isnumeric():
+								if splitted[1] != "0":
+									if splitted[1] is not None:
+										if splitted[1].isnumeric():
+											self.custom_size = float(self.custom_size_wid.text())
+
+											self.settings["ui_scale"] = [self.selector1.currentIndex(),
+																		 float(self.custom_size)]
+											self.settings["text_scale"] = self.settings["ui_scale"]
+			else:
+				pass
+
+
+		self.settings["custom_theme"] = self.custom_theme.toPlainText()
 		settings_file = open(self.settings_filepath, "w")
 		json.dump(self.settings, settings_file)
 		settings_file.close()
@@ -841,7 +895,8 @@ if __name__ == "__main__":
 	# window = BuildMenu(Editor("test", "JX_Snack", "out/"), Editor("test", "JX_Snack", "out/").mem_data,
 	# 				   Editor("test", "JX_Snack", "out/").editor_data)
 	# window = Editor("test", "JX_Snack", "out/")
-	window = Creator()
+	window = SettingsWindow()
+	# window = Creator()
 	window.show()
 
 	app.setWindowIcon(QIcon('crys/storage/icon.png'))
