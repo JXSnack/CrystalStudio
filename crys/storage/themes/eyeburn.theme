@@ -15,3 +15,5 @@ QTabBar::tab {background: lightgray; border: 3px solid lightgray; padding: 5px; 
 QTabBar::tab:selected {background: white; margin-bottom: -1px;}
 
 QComboBox {selection-background-color: white; selection-color: lightgray; color: gray;  background-color: white; border: 1px solid gray; padding: 1px 0px 1px 20px;}
+
+*** CUSTOM THEME SETTINGS BELOW ***
