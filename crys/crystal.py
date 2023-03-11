@@ -1,9 +1,6 @@
+import json
 import os
-
-
-class BuilderType:
-	GAME = {"builder_type": "cs"}
-	JavaScript = {"builder_type": "JavaScript"}
+from crys.script import *
 
 
 class Game:
@@ -76,6 +73,22 @@ button {
 			file.write(returned_game)
 			file.close()
 
+			script = open(f"editor/{self.name}/script.json", "r")
+			script = json.load(script)
+
+			cs_vars = ""
+			cs_funcs = ""
+			cs_checks = ""
+			for var in script["global_variables"]:
+				cs_vars += Script(script, BuilderType.JavaScript).make_var(var)
+
+			for func in script["functions"]:
+				cs_funcs += Script(script, BuilderType.JavaScript).make_func(func)
+
+			for check in script["checks"]:
+				cs_checks += Script(script, BuilderType.JavaScript).make_check(check)
+				# cs_checks += Script(script, BuilderType.JavaScript).make_check(check)
+
 			player = open(folder + "player.html", "w")
 
 			returned_player = f"""
@@ -104,7 +117,18 @@ button {
   var game = {str(self.scenes).replace("(", "[").replace(")", "]")}
   var game_running = true
   var current_scene = 0
+  
+  // CrystalScript global variables
+{cs_vars}
+  
+  // CrystalScript functions
+{cs_funcs}
+
+  // CrystalScript checks
+  crys_manager_checker = setInterval(function ()
 """
+			returned_player += " {\n"
+			returned_player += cs_checks + "\n}, 200)\n\n// From hereon there's the \"normal\" code\n\n\n"
 			returned_player += """
   function setText(id, text) {
     document.getElementById(id).innerHTML = text;

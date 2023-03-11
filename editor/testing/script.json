@@ -6,12 +6,12 @@
 		"lose": [
 			["scene", 2]
 		],
-		"add_to_fo": [
-			["add", 1, "lose"]
+		"add_to_foo": [
+			["add", 1, "foo"]
 		],
 
 		"remove_from_foo": [
-			["remove", 1, "lose"]
+			["remove", 1, "foo"]
 		],
 
 		"win": [
@@ -20,14 +20,14 @@
 	},
 	"checks": {
 		"foo_meter_low": {
-			"trigger": ["lose", "is", 0],
+			"condition": ["foo", "is", 0],
 			"execute": [
 				["function", "lose"]
 			]
 		},
 
 		"foo_meter_full": {
-			"trigger": ["lose", "is", 10],
+			"condition": ["foo", "is", 10],
 			"execute": [
 				["function", "win"]
 			]
