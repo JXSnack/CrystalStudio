@@ -17,3 +17,11 @@ QTabBar::tab:selected {background: white; margin-bottom: -1px;}
 QComboBox {selection-background-color: white; selection-color: lightgray; color: gray;  background-color: white; border: 1px solid gray; padding: 1px 0px 1px 20px;}
 
 *** CUSTOM THEME SETTINGS BELOW ***
+
+{
+	"bookmark-projects-background": "background-color: rgb(240,240,240); border-radius: 10px;",
+	"bookmark-projects-name": "color: lightgray;",
+	"bookmark-projects-info": "color: lightgray; font-size: 14px;",
+	"bookmark-projects-add": "background-color: rgb(240, 240, 240); border: 3px solid rgb(250, 250, 250);",
+	"bookmark-projects-rm": "background-color: rgb(240, 240, 240); border: 3px solid rgb(250, 250, 250);"
+}

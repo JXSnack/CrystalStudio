@@ -6,7 +6,7 @@ QLineEdit:enabled {color: black;  border: 1px solid black;}
 QTextEdit:disabled {color: gray; border: 1px solid gray;}
 QTextEdit:enabled {color: white; border: 1px solid black;}
 
-QPushButton {color: black; background-color: rgb(190, 190, 190);  border: 3px solid rgb(190, 190, 190);}
+QPushButton {color: black; background-color: rgb(190, 190, 190);  border: 3px solid rgb(190, 190, 190); border-radius:5px;}
 QPushButton:hover {background-color: rgb(200, 200, 200);}
 
 QLabel {color: black; background: transparent;}
@@ -17,3 +17,11 @@ QTabBar::tab:selected {background: rgb(200, 200, 200); margin-bottom: -1px;}
 QComboBox {selection-background-color: rgb(200, 200, 200); selection-color: rgb(40, 40, 40); color: black;  background-color: rgb(230, 230, 230); border: 1px solid black; padding: 1px 0px 1px 20px;}
 
 *** CUSTOM THEME SETTINGS BELOW ***
+
+{
+	"bookmark-projects-background": "background-color: rgb(180,180,180); border-radius: 10px;",
+	"bookmark-projects-name": "color: black;",
+	"bookmark-projects-info": "color: lightgray; font-size: 14px;",
+	"bookmark-projects-add": "border-radius: 10px;",
+	"bookmark-projects-rm": "background-color: rgb(190, 40, 40); border: 3px solid rgb(190, 20, 20); color: white;"
+}

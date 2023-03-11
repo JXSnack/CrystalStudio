@@ -139,6 +139,8 @@ class Creator(QMainWindow):
 				self.pointed.append(open_btn)
 				self.pointed.append(remove_btn)
 				num += 1
+
+				self.fix_css()
 			else:
 				break
 

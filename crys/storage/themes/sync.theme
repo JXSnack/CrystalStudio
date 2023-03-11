@@ -1,3 +1,9 @@
 *** CUSTOM THEME SETTINGS BELOW ***
 
-{"bookmark-projects-background": "", "bookmark-projects-name": "", "bookmark-projects-info": ";", "bookmark-projects-rm": "", "bookmark-projects-add": ""}
+{
+	"bookmark-projects-background": "",
+	"bookmark-projects-name": "",
+	"bookmark-projects-info": ";",
+	"bookmark-projects-rm": "",
+	"bookmark-projects-add": ""
+}

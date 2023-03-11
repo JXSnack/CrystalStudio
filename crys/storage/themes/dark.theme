@@ -6,7 +6,7 @@ QLineEdit:enabled {color: white; border: 1px solid white;}
 QTextEdit:disabled {color: gray; border: 1px solid gray;}
 QTextEdit:enabled {color: white; border: 1px solid white;}
 
-QPushButton {color: white; background-color: rgb(51, 51, 51); border: 3px solid rgb(51, 51, 51);}
+QPushButton {color: white; background-color: rgb(51, 51, 51); border: 3px solid rgb(51, 51, 51); border-radius:5px;}
 QPushButton:hover {background-color: rgb(60, 60, 60);}
 
 QLabel {color: white; background: transparent;}
@@ -18,4 +18,10 @@ QComboBox {selection-background-color: rgb(51, 51, 51); selection-color: white; 
 
 *** CUSTOM THEME SETTINGS BELOW ***
 
-{"bookmark-projects-background": "background-color: rgb(80,80,80); border-radius: 10px;", "bookmark-projects-name": "color: white;", "bookmark-projects-info": "color: lightgray; font-size: 14px;", "bookmark-projects-add": "background-color: rgb(0, 153, 204); border: 3px solid rgb(0, 115, 153);", "bookmark-projects-rm": "background-color: rgb(179, 0, 0); border: 3px solid rgb(153, 0, 0);"}
+{
+	"bookmark-projects-background": "background-color: rgb(80,80,80); border-radius: 10px;",
+	"bookmark-projects-name": "color: white;",
+	"bookmark-projects-info": "color: lightgray; font-size: 14px;",
+	"bookmark-projects-add": "background-color: rgb(0, 153, 204); border: 3px solid rgb(0, 115, 153); border-radius: 10px;",
+	"bookmark-projects-rm": "background-color: rgb(179, 0, 0); border: 3px solid rgb(153, 0, 0);"
+}
