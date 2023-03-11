@@ -4,7 +4,7 @@ import subprocess
 
 from crys.crystal import *
 
-version = "1.1.1"
+version = "1.2.0-SNAPSHOT [public-01]"
 
 
 def open_file(path: str) -> None:
@@ -17,12 +17,8 @@ def open_file(path: str) -> None:
 
 
 def translate_builder(text: str) -> BuilderType:
-	if text.lower().startswith(("htmlplus", "html+")):
-		return BuilderType.HTMLPlus
-	elif text.lower().startswith("html"):
-		return BuilderType.HTML
-	elif text.lower().startswith("python"):
-		return BuilderType.PYTHON
+	if text.lower().startswith(("js", "javascript", "web app")):
+		return BuilderType.JavaScript
 	else:
 		raise ValueError(f"Not translatable: {text}")
 

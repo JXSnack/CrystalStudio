@@ -1039,9 +1039,7 @@ class BuildMenu(QDialog):
 		message1 = QLabel("Builder type:")
 		self.labels.append(message1)
 		self.builder_type = QComboBox()
-		self.builder_type.insertItem(0, "HTML+ (JavaScript, HTML, CSS)")
-		self.builder_type.insertItem(1, "HTML (HTML, CSS)")
-		self.builder_type.insertItem(2, "Python (Terminal game)")
+		self.builder_type.insertItem(0, "Web application (JavaScript, HTML, CSS)")
 		self.lines.append(self.builder_type)
 
 		cancel = QPushButton("Cancel")

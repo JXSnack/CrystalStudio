@@ -1,0 +1,37 @@
+{
+	"global_variables": {
+		"foo": 5
+	},
+	"functions": {
+		"lose": [
+			["scene", 2]
+		],
+		"add_to_fo": [
+			["add", 1, "lose"]
+		],
+
+		"remove_from_foo": [
+			["remove", 1, "lose"]
+		],
+
+		"win": [
+			["scene", 3]
+		]
+	},
+	"checks": {
+		"foo_meter_low": {
+			"trigger": ["lose", "is", 0],
+			"execute": [
+				["function", "lose"]
+			]
+		},
+
+		"foo_meter_full": {
+			"trigger": ["lose", "is", 10],
+			"execute": [
+				["function", "win"]
+			]
+
+		}
+	}
+}
