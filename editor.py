@@ -638,7 +638,7 @@ class Editor(QWidget):
 				self.scenes_widget.setCurrentIndex(self.scenes_widget.count() - 2)
 			elif self.scenes_widget.currentIndex() == 0:
 				print(
-					f"An error occurred. This is probably why:\n -> You tried to delete scene number 1 (main scene cannot be removed)\n\nIf this is not the case, please report this issue on Github\nMore info: \"ScenesWidget.currentIndex() in [0 and count-1]\" removing bug")
+					f"An error occurred. This is probably because:\n -> You tried to delete scene number 1 (main scene cannot be removed)\n\nIf this is not the case, please report this issue on Github\nMore info: \"ScenesWidget.currentIndex() in [0 and count-1]\" removing bug")
 
 			elif self.scenes_widget.currentIndex() == self.scenes_widget.count() - 1:
 				del self.mem_data["scenes"][self.scenes_widget.currentIndex()]
@@ -649,7 +649,7 @@ class Editor(QWidget):
 				self.scenes_widget.setCurrentIndex(self.scenes_widget.count() - 1)
 			else:
 				print(
-					f"An error occurred. This is probably why:\n -> You tried to delete scene number 1 (main scene cannot be removed)\nIf this is not the case, please report this issue on Github\nMore info: \"ScenesWidget.currentIndex() in [0 and count-1]\" removing bug")
+					f"An error occurred. This is probably because:\n -> You tried to delete scene number 1 (main scene cannot be removed)\nIf this is not the case, please report this issue on Github\nMore info: \"ScenesWidget.currentIndex() in [0 and count-1]\" removing bug")
 
 		except IndexError as err:
 			print(
