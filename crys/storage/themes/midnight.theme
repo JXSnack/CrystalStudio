@@ -22,6 +22,6 @@ QComboBox {selection-background-color: rgb(20, 20, 20); selection-color: white; 
 	"bookmark-projects-background": "background-color: rgb(40,40,40); border-radius: 10px;",
 	"bookmark-projects-name": "color: white;",
 	"bookmark-projects-info": "color: lightgray; font-size: 14px;",
-	"bookmark-projects-add": "border-radius:10px;",
+	"bookmark-projects-add": "border-radius: 10px;",
 	"bookmark-projects-rm": "background-color: rgb(179, 0, 0); border: 3px solid rgb(153, 0, 0);"
 }
