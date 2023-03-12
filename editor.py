@@ -419,6 +419,21 @@ class Editor(QWidget):
 			json.dump(self.editor_data, file)
 			file.close()
 
+		try:
+			file = open(f"editor/{name}/script.json", "r")
+			self.script_data = json.load(file)
+			file.close()
+		except FileNotFoundError:
+			file = open(f"editor/{name}/script.json", "w")
+
+			self.script_data = {"global_variables": [],
+								"functions": [],
+								"checks": [],
+								}
+
+			json.dump(self.script_data, file)
+			file.close()
+
 		self.save_file = open(f"editor/{name}/save.json", "r")
 		self.editor_file = open(f"editor/{name}/editor.json", "r")
 

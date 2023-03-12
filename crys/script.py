@@ -98,20 +98,84 @@ class ScriptHandler:
 
 	def decode_condition(self, text: list):
 		rv = ""
-		if type(text[0]) == str:
-			cond_1 = f"crys_v_{text[0]}"
+		if type(text[0]) == str and text[0].startswith("v:"):
+			cond_1 = f"crys_v_{text[0].replace('v:', '', 1)}"
+		elif type(text[2]) == str:
+			cond_1 = f"\"{text[0]}\""
 		else:
-			cond_1 = text[0]
+			cond_1 = text[2]
 
-		if type(text[2]) == str:
-			cond_2 = f"crys_v_{text[2]}"
+		if type(text[2]) == str and text[2].startswith("v:"):
+			cond_2 = f"crys_v_{text[2].replace('v:', '', 1)}"
+		elif type(text[2]) == str:
+			cond_2 = f"\"{text[2]}\""
 		else:
 			cond_2 = text[2]
 
-		if text[1] == "is":
+		if text[1] in ["is", "=="]:
 			if self.lang == BuilderType.JavaScript:
 				try:
 					rv += f"if ({cond_1} === {cond_2}) " + "{\n"
+					return rv
+				except IndexError:
+					print(f"ScriptHandler cannot decode_condition: {text}")
+					Error().arg_missing("text", 2)
+					return ""
+			else:
+				Error().unknown_lang(self.lang)
+				return ""
+		elif text[1] in ["is not", "not", "!="]:
+			if self.lang == BuilderType.JavaScript:
+				try:
+					rv += f"if ({cond_1} !== {cond_2}) " + "{\n"
+					return rv
+				except IndexError:
+					print(f"ScriptHandler cannot decode_condition: {text}")
+					Error().arg_missing("text", 2)
+					return ""
+			else:
+				Error().unknown_lang(self.lang)
+				return ""
+		elif text[1] in ["greater than", ">"]:
+			if self.lang == BuilderType.JavaScript:
+				try:
+					rv += f"if ({cond_1} > {cond_2}) " + "{\n"
+					return rv
+				except IndexError:
+					print(f"ScriptHandler cannot decode_condition: {text}")
+					Error().arg_missing("text", 2)
+					return ""
+			else:
+				Error().unknown_lang(self.lang)
+				return ""
+		elif text[1] in ["less than", "<"]:
+			if self.lang == BuilderType.JavaScript:
+				try:
+					rv += f"if ({cond_1} < {cond_2}) " + "{\n"
+					return rv
+				except IndexError:
+					print(f"ScriptHandler cannot decode_condition: {text}")
+					Error().arg_missing("text", 2)
+					return ""
+			else:
+				Error().unknown_lang(self.lang)
+				return ""
+		elif text[1] in ["greater or equal to", ">="]:
+			if self.lang == BuilderType.JavaScript:
+				try:
+					rv += f"if ({cond_1} >= {cond_2}) " + "{\n"
+					return rv
+				except IndexError:
+					print(f"ScriptHandler cannot decode_condition: {text}")
+					Error().arg_missing("text", 2)
+					return ""
+			else:
+				Error().unknown_lang(self.lang)
+				return ""
+		elif text[1] in ["less or equal to", "<="]:
+			if self.lang == BuilderType.JavaScript:
+				try:
+					rv += f"if ({cond_1} <= {cond_2}) " + "{\n"
 					return rv
 				except IndexError:
 					print(f"ScriptHandler cannot decode_condition: {text}")
@@ -130,7 +194,11 @@ class ScriptHandler:
 		if text[0] == "scene":  # scene switch command
 			if self.lang == BuilderType.JavaScript:
 				try:
-					rv += f"updateScene({text[1] - 1});"
+					if type(text[1]) == str:
+						go_to = f"crys_v_{text[1]}"
+					else:
+						go_to = text[1]
+					rv += f"updateScene({go_to - 1});"
 					return rv
 				except IndexError:
 					print(f"ScriptHandler cannot decode: {text}")
@@ -143,7 +211,15 @@ class ScriptHandler:
 		elif text[0] == "add":  # add command (plus)
 			if self.lang == BuilderType.JavaScript:
 				try:
-					rv += f"crys_v_{text[2]} = crys_v_{text[2]} + {text[1]};"
+					if type(text[2]) == str:
+						num2 = f"crys_v_{text[1]}"
+					else:
+						num2 = text[2]
+
+					if type(text[1]) != str:
+						Error().has_to_be(str, type(text[1]))
+
+					rv += f"crys_v_{text[2]} = crys_v_{text[2]} + {num2};"
 					return rv
 				except IndexError:
 					print(f"ScriptHandler cannot decode: {text}")
@@ -156,7 +232,57 @@ class ScriptHandler:
 		elif text[0] == "remove":  # remove command (minus)
 			if self.lang == BuilderType.JavaScript:
 				try:
-					rv += f"crys_v_{text[2]} = crys_v_{text[2]} - {text[1]};"
+					if type(text[2]) == str:
+						num2 = f"crys_v_{text[1]}"
+					else:
+						num2 = text[2]
+
+					if type(text[1]) != str:
+						Error().has_to_be(str, type(text[1]))
+
+					rv += f"crys_v_{text[2]} = crys_v_{text[2]} + {num2};"
+					return rv
+				except IndexError:
+					print(f"ScriptHandler cannot decode: {text}")
+					Error().arg_missing("text", 2)
+					return f""
+			else:
+				Error().unknown_lang(self.lang)
+				return ""
+
+		elif text[0] == "multiply":  # multiply command
+			if self.lang == BuilderType.JavaScript:
+				try:
+					if type(text[2]) == str:
+						num2 = f"crys_v_{text[1]}"
+					else:
+						num2 = text[2]
+
+					if type(text[1]) != str:
+						Error().has_to_be(str, type(text[1]))
+
+					rv += f"crys_v_{text[2]} = crys_v_{text[2]} * {num2};"
+					return rv
+				except IndexError:
+					print(f"ScriptHandler cannot decode: {text}")
+					Error().arg_missing("text", 2)
+					return f""
+			else:
+				Error().unknown_lang(self.lang)
+				return ""
+
+		elif text[0] == "divide":  # divide command
+			if self.lang == BuilderType.JavaScript:
+				try:
+					if type(text[2]) == str:
+						num2 = f"crys_v_{text[1]}"
+					else:
+						num2 = text[2]
+
+					if type(text[1]) != str:
+						Error().has_to_be(str, type(text[1]))
+
+					rv += f"crys_v_{text[2]} = crys_v_{text[2]} / {num2};"
 					return rv
 				except IndexError:
 					print(f"ScriptHandler cannot decode: {text}")
@@ -186,6 +312,10 @@ class ScriptHandler:
 class Error:
 	def __init__(self):
 		pass
+
+	def has_to_be(self, has, is_):
+		print(f"Error: One of the arguments has to be {has} and not {is_}!")
+		sys.exit(0)
 
 	def unknown_lang(self, lang):
 		print(f"Error: Cannot handle builder language '{lang['lang']}'. Please report this issue on GitHub!")

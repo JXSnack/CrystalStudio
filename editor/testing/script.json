@@ -27,7 +27,7 @@
 		},
 
 		"foo_meter_full": {
-			"condition": ["foo", "is", 10],
+			"condition": ["foo", "is", 6],
 			"execute": [
 				["function", "win"]
 			]
