@@ -4,7 +4,7 @@ import subprocess
 
 from crys.crystal import *
 
-version = "1.2.0-SNAPSHOT [public-04]"
+version = "1.2.0-SNAPSHOT [last-dev-changes]"
 
 
 def open_file(path: str) -> None:
