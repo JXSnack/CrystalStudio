@@ -1,15 +1,56 @@
+import json
 import sys
 
 
 class BuilderType:
 	GAME = {"builder_type": "cs", "lang": "Coming soon!"}
-	JavaScript = {"builder_type": "Web application", "lang": "JavaScript"}
+	JavaScript = {"builder_type": "Web application", "lang": "JavaScript2"}
+
+
+class ScriptValues:
+	VARIABLE_START = "{@"
+	VARIABLE_END = "}"
+
+
+class MemCheck:
+	def __init__(self, mem: dict):
+		self.script = json.load(open(f"editor/{mem['info']['name']}/script.json", "r"))
+
+	def get_all_functions(self):
+		rv = []
+		for func in self.script["functions"]:
+			rv.append(func)
+
+		return rv
 
 
 class Script:
 	def __init__(self, script, lang):
 		self.script = script
 		self.lang = lang
+
+	def make_function_handler(self, functions: list):
+		rv = ""
+		if self.lang == BuilderType.JavaScript:
+			rv += "function handleCrystalFunction(function_name) {\n"
+
+			func2 = functions[0]
+			rv += f"\t\t\t\tif (function_name === \"{func2}\") " + "{\n"
+			rv += f"\t\t\t\t\tcrys_f_{func2}();\n"
+			rv += "\t\t\t\t} "
+			functions.pop(0)
+
+			for func in functions:
+				rv += f"else if (function_name === \"{func}\") " + "{\n"
+				rv += f"\t\t\t\t\tcrys_f_{func}();\n"
+				rv += "\t\t\t\t} "
+
+			rv += "else { alert(\"ERROR: Cannot 'handleCrystalFunction': \" + function_name + \". Please contact the creator of this game and report this issue on the CrystalStudio GitHub page (github.com/JXSnack/CrystalStudio/issues)\"); \n\t\t\t\t}\n\t\t\t}\n"
+
+			return rv
+		else:
+			Error().unknown_lang(self.lang)
+			return ""
 
 	def make_var(self, var):
 		rv = ""
@@ -24,7 +65,7 @@ class Script:
 		func_exec = self.script["functions"][func]
 		if self.lang == BuilderType.JavaScript:
 			rv = ""
-			rv += f"\tfunction crys_f_{func} " + "{\n"
+			rv += f"\tfunction crys_f_{func}() " + "{\n"
 			for un_code in func_exec:
 				code = ScriptHandler(self.lang).decode(un_code)
 				rv += f"\t\t{code}\n"
@@ -40,7 +81,7 @@ class Script:
 		check_condition = self.script["checks"][check]["condition"]
 		check_exec = self.script["checks"][check]["execute"]
 
-		rv += ScriptHandler(self.lang).decode_condition(check_condition) + f"// {check}\n\n"
+		rv += ScriptHandler(self.lang).decode_condition(check_condition) + f"// {check}\n"
 
 		for un_code in check_exec:
 			code = ScriptHandler(self.lang).decode(un_code)
@@ -49,6 +90,7 @@ class Script:
 		rv += "\t}\n\n"
 
 		return rv
+
 
 class ScriptHandler:
 	def __init__(self, lang):
@@ -69,7 +111,7 @@ class ScriptHandler:
 		if text[1] == "is":
 			if self.lang == BuilderType.JavaScript:
 				try:
-					rv += f"if {cond_1} === {cond_2} " + "{\n"
+					rv += f"if ({cond_1} === {cond_2}) " + "{\n"
 					return rv
 				except IndexError:
 					print(f"ScriptHandler cannot decode_condition: {text}")

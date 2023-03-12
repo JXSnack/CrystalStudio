@@ -4,6 +4,7 @@ import sys
 
 import crys.crystal
 import crys.helper as helper
+from crys.script import MemCheck
 
 try:
 	from PyQt6.QtCore import *
@@ -597,9 +598,18 @@ class Editor(QWidget):
 		self.editor_data["scenes"][self.scenes_widget.currentIndex()][button]["notes"] = note
 		self.save()
 
-	def change_btn_exec(self, button: int, exec_: int):
-		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][button][1] = exec_ + 1
-		self.save()
+	def change_btn_exec(self, button: int, exec_, function: str = None):
+		if type(exec_) == int:
+			self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][button][1] = exec_ + 1
+			self.save()
+		elif type(exec_) == str:
+			self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][button][1] = exec_
+			try:
+				self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][button][2] = function
+				self.save()
+			except IndexError:
+				self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][button].append(function)
+				self.save()
 
 	def change_label_text(self, text):
 		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["title"] = text
@@ -872,8 +882,9 @@ class ButtonEditor(QDialog):
 		self.layout = QVBoxLayout()
 		self.layout1 = QHBoxLayout()
 		self.layout2 = QHBoxLayout()
-		self.layout3 = QVBoxLayout()
-		self.layout4 = QHBoxLayout()
+		self.layout3 = QHBoxLayout()
+		self.layout4 = QVBoxLayout()
+		self.layout5 = QHBoxLayout()
 		message1 = QLabel("Button text:")
 		labels.append(message1)
 		self.btn_text = QLineEdit()
@@ -881,11 +892,26 @@ class ButtonEditor(QDialog):
 		lines.append(self.btn_text)
 
 		message2 = QLabel("Button action:")
+		message_script = QLabel("Script function:")
+		self.script_function = QComboBox(self)
+		for func in MemCheck(self.mem).get_all_functions():
+			self.script_function.addItem(func)
+
 		labels.append(message2)
 		self.scenes_widget = QComboBox(self)
+		self.scenes_widget.addItem(f"Script")
 		for i in range(len(memory["scenes"])):
-			self.scenes_widget.insertItem(i, f"Go to {i + 1}")
-		self.scenes_widget.setCurrentIndex(self.mem["scenes"][scene_id]["buttons"][btn_id][1] - 1)
+			self.scenes_widget.addItem(f"Go to {i + 1}")
+		if self.mem["scenes"][scene_id]["buttons"][btn_id][1] == "script":
+			self.scenes_widget.setCurrentIndex(0)
+			self.script_function.setCurrentText(self.mem["scenes"][scene_id]["buttons"][btn_id][2])
+			self.script_function.setEnabled(True)
+		else:
+			self.scenes_widget.setCurrentIndex(self.mem["scenes"][scene_id]["buttons"][btn_id][1])
+			self.script_function.setDisabled(True)
+
+		self.scenes_widget.currentIndexChanged.connect(lambda: self.update_selector())
+
 		lines.append(self.scenes_widget)
 
 		message3 = QLabel("Notes:")
@@ -908,16 +934,19 @@ class ButtonEditor(QDialog):
 		self.layout1.addWidget(self.btn_text)
 		self.layout2.addWidget(message2)
 		self.layout2.addWidget(self.scenes_widget)
-		self.layout3.addWidget(message3)
-		self.layout3.addWidget(self.notes)
-		self.layout4.addWidget(remove_btn)
-		self.layout4.addWidget(cancel)
-		self.layout4.addWidget(save)
+		self.layout3.addWidget(message_script)
+		self.layout3.addWidget(self.script_function)
+		self.layout4.addWidget(message3)
+		self.layout4.addWidget(self.notes)
+		self.layout5.addWidget(remove_btn)
+		self.layout5.addWidget(cancel)
+		self.layout5.addWidget(save)
 
 		self.layout.addLayout(self.layout1)
 		self.layout.addLayout(self.layout2)
 		self.layout.addLayout(self.layout3)
 		self.layout.addLayout(self.layout4)
+		self.layout.addLayout(self.layout5)
 
 		self.setLayout(self.layout)
 
@@ -928,14 +957,24 @@ class ButtonEditor(QDialog):
 	def fix_css(self):
 		self.setStyleSheet(helper.generate_stylesheet())
 
+	def update_selector(self):
+		if self.scenes_widget.currentText() == "Script":
+			self.script_function.setEnabled(True)
+		else:
+			self.script_function.setDisabled(True)
+
 	def remove_btn_clicked(self):
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]), self.mem["info"]["out"]).remove_btn(
 			self.btn_id)
 		self.hide()
 
 	def save_btn_clicked(self):
-		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
-			   self.mem["info"]["out"]).change_btn_exec(self.btn_id, self.scenes_widget.currentIndex())
+		if self.scenes_widget.currentIndex() != 0:
+			Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
+				   self.mem["info"]["out"]).change_btn_exec(self.btn_id, self.scenes_widget.currentIndex() - 1)
+		else:
+			Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
+				   self.mem["info"]["out"]).change_btn_exec(self.btn_id, "script", self.script_function.currentText())
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
 			   self.mem["info"]["out"]).change_btn_note(self.btn_id, self.notes.toPlainText())
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
@@ -972,6 +1011,7 @@ class TextEditor(QDialog):
 		self.layout2 = QHBoxLayout()
 		self.layout3 = QVBoxLayout()
 		self.layout4 = QHBoxLayout()
+
 		message1 = QLabel("Text:")
 		labels.append(message1)
 		self.text = QTextEdit()
@@ -1039,7 +1079,7 @@ class BuildMenu(QDialog):
 		message1 = QLabel("Builder type:")
 		self.labels.append(message1)
 		self.builder_type = QComboBox()
-		self.builder_type.insertItem(0, "Web application (JavaScript, HTML, CSS)")
+		self.builder_type.insertItem(0, "Web application (JavaScript2, HTML, CSS)")
 		self.lines.append(self.builder_type)
 
 		cancel = QPushButton("Cancel")

@@ -7,6 +7,7 @@ class Game:
 	def __init__(self, game: dict, how: BuilderType, from_editor: bool = False) -> None:
 		self.game = game  # what game
 		self.build_type = how  # how should it be exported?
+		self.mem = game # memory for all MemCheck(self.mem)
 		self.from_editor = from_editor # does the request come from the editor?
 
 		self.name = game["info"]["name"]  # game name
@@ -79,15 +80,27 @@ button {
 			cs_vars = ""
 			cs_funcs = ""
 			cs_checks = ""
-			for var in script["global_variables"]:
+			cs_func_handler = ""
+			for var in script["global_variables"]: # variables
 				cs_vars += Script(script, BuilderType.JavaScript).make_var(var)
 
-			for func in script["functions"]:
+			for func in script["functions"]: # functions
 				cs_funcs += Script(script, BuilderType.JavaScript).make_func(func)
 
-			for check in script["checks"]:
+			for check in script["checks"]: # checks
 				cs_checks += Script(script, BuilderType.JavaScript).make_check(check)
-				# cs_checks += Script(script, BuilderType.JavaScript).make_check(check)
+
+			# function handler
+			cs_func_handler += Script(script, BuilderType.JavaScript).make_function_handler(MemCheck(self.mem).get_all_functions())
+
+			# variables
+			variables = []
+			for var in script["global_variables"]:
+				variables.append(var)
+
+			variables_replace = []
+			for i999 in range(len(script["global_variables"])):
+				variables_replace.append(script["global_variables"][variables[i999]])
 
 			player = open(folder + "player.html", "w")
 
@@ -114,38 +127,61 @@ button {
 </body>
 
 <script>
-  var game = {str(self.scenes).replace("(", "[").replace(")", "]")}
-  var game_running = true
-  var current_scene = 0
-  
   // CrystalScript global variables
 {cs_vars}
   
   // CrystalScript functions
 {cs_funcs}
-
+  
+  // CrystalStudio init game
+  var game = {str(self.scenes)}
+  var game_running = true
+  var current_scene = 0
+  
   // CrystalScript checks
   crys_manager_checker = setInterval(function ()
 """
 			returned_player += " {\n"
-			returned_player += cs_checks + "\n}, 200)\n\n// From hereon there's the \"normal\" code\n\n\n"
+			returned_player += cs_checks + "\n}, 200)\n\n\n"
+			returned_player += "crys_internal_updater = setInterval(function () {\n"
+			returned_player += f"\tgame = {str(self.scenes)}\nupdateScene(current_scene)\n"
+			returned_player += "}, 500)\n\n\n"
+			returned_player += f"""
+			// CrystalScript Handlers
+			{cs_func_handler}
+			"""
 			returned_player += """
   function setText(id, text) {
     document.getElementById(id).innerHTML = text;
   }
 
-  function updateScene(scene) {
-    current_scene = scene;
-    setText("title", game[scene]["title"])
-    clearDiv("buttons")
+  function updateScene(scene, coming_from_button = null) {
+    if (coming_from_button === null) {
+	  current_scene = scene;
+      setText("title", game[scene]["title"])
+	  clearDiv("buttons")
+	  for (let i2 = 0; i2 < game[current_scene]["buttons"].length;) {
+	    createButton(game[current_scene]["buttons"][i2][0], game[current_scene]["buttons"][i2][1], i2)
+	    i2++;
+	  }
+      createMainMenuButton("Back to main menu")
+    } else if (game[current_scene]["buttons"][coming_from_button][1] === "script") {
+      handleCrystalFunction(game[current_scene]["buttons"][coming_from_button][2]);
+    } else if (coming_from_button !== null) {
+      if (game[current_scene]["buttons"][coming_from_button][1] !== "script") {
+        current_scene = scene;
+        setText("title", game[scene]["title"])
+        clearDiv("buttons")
+	    for (let i2 = 0; i2 < game[current_scene]["buttons"].length;) {
+		  createButton(game[current_scene]["buttons"][i2][0], game[current_scene]["buttons"][i2][1], i2)
+		  i2++;
+	    }
 
-    for (let i2 = 0; i2 < game[current_scene]["buttons"].length;) {
-      createButton(game[current_scene]["buttons"][i2][0], game[current_scene]["buttons"][i2][1])
-      i2++;
+        createMainMenuButton("Back to main menu")
+      }
     }
-
-    createMainMenuButton("Back to main menu")
   }
+
 
   function clearDiv(id) {
     var div = document.getElementById(id);
@@ -154,14 +190,13 @@ button {
     }
   }
 
-  function createButton(name, next_scene) {
+  function createButton(name, next_scene, coming_from_button) {
     var btn = document.createElement("button")
     btn.innerHTML = name
     btn.onclick = function () {
       next_scene--;
-      updateScene(next_scene);
+      updateScene(next_scene, coming_from_button);
     };
-
 
     document.getElementById("buttons").appendChild(btn)
     btn = null
@@ -190,6 +225,9 @@ button {
   updateScene(0)
 </script>
 			"""
+
+			for i998 in range(len(variables)):
+				returned_player = str(returned_player).replace(ScriptValues.VARIABLE_START + variables[i998] + ScriptValues.VARIABLE_END, f"\' + crys_v_{variables[i998]} + \'")
 
 			player.write(returned_player)
 			player.close()
