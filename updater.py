@@ -51,7 +51,7 @@ new_mainfile = open("main.py", "w").write("\n".join(new_mainfile_content))  # pl
 new_editor_content = open(csuf + "/editor.py", "r").readlines()  # get new content
 new_editor = open("editor.py", "w").write("\n".join(new_editor_content))  # place it there where it belongs
 
-new_settings = open("crys/storage/settings.json", "w").write("\n".join(settings_backup)) # place the settings backup
+json.dump(settings_backup, open("crys/storage/settings.json"))  # place the settings backup
 
 shutil.rmtree("CrystalStudioUpdaterFiles")  # clean up the mess that we made
 
