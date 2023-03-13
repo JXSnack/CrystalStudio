@@ -33,7 +33,7 @@ download_url = "https://github.com/JXSnack/CrystalStudio/archive/refs/tags/v1.2.
 r = requests.get(download_url, allow_redirects=True, stream=True)  # get the download
 z = zipfile.ZipFile(io.BytesIO(r.content))  # get the zipfile
 csuf = "CrystalStudioUpdaterFiles"  # set the folder name
-download_name = "CrystalStudio-main"  # set the downloaded file name
+download_name = "CrystalStudio-1.2.0"  # set the downloaded file name
 os.mkdir(csuf)  # make the folder
 z.extractall(f"{csuf}/")  # extract the zip
 csuf = csuf + f"/{download_name}"  # set the new folder name
