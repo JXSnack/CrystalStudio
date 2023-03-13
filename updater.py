@@ -19,6 +19,7 @@ print("Starting update to 1.2.0...")
 
 if version == "1.2.0":
 	print("You have already updated.")
+	sys.exit(0)
 if version != "1.1.1":
 	print(
 		"WARNING. You are running a different version than 1.1.1! This updater is made ONLY for 1.1.1 to 1.2.0! Do you want to continue? Y/n")
