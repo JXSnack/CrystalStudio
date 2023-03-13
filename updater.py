@@ -47,10 +47,10 @@ os.remove("editor.py")  # remove old editor.py
 
 shutil.move(csuf + "/crys", os.getcwd())  # move the new code folder to the place where the old one was
 new_mainfile_content = open(csuf + "/main.py", "r").readlines()  # get new content
-new_mainfile = open("main.py", "w").write("\n".join(new_mainfile_content))  # place it there where it belongs
+new_mainfile = open("main.py", "w").write("".join(new_mainfile_content))  # place it there where it belongs
 
 new_editor_content = open(csuf + "/editor.py", "r").readlines()  # get new content
-new_editor = open("editor.py", "w").write("\n".join(new_editor_content))  # place it there where it belongs
+new_editor = open("editor.py", "w").write("".join(new_editor_content))  # place it there where it belongs
 
 json.dump(settings_backup, open("crys/storage/settings.json", "w"))  # place the settings backup
 
