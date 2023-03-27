@@ -393,7 +393,13 @@ class ScriptHandler:
 			else:
 				Error().unknown_lang(self.lang)
 				return ""
-
+		elif text[0] == "log": # log function
+			if self.lang == BuilderType.JavaScript:
+				try:
+					rv += f"console.log({text[1]})"
+				except IndexError:
+					print(f"ScriptHandler cannot decode: {text}")
+					Error().arg_missing("text", 1)
 		else:
 			Error().unknown_cmd(text)
 			return ""
