@@ -232,5 +232,8 @@ button {
 			player.write(returned_player)
 			player.close()
 
+			if ScriptValues.in_an_if != 0:
+				print("Error: Exported game may not work, because not all ifs, loops and/or whiles are 'end'ed!")
+
 			print("Finished")
 

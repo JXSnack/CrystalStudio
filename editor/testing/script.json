@@ -1,0 +1,21 @@
+{
+	"global_variables": {
+		"foo": 5,
+		"faa": "I'm a string!"
+	},
+	"functions": {
+		"foo_check": [
+			["if", "v:foo", "is", 5],
+			["log", "Wow! Foo is really cool right now"],
+			["end"]
+		]
+	},
+	"checks": {
+		"foo_is_gone": {
+			"condition": ["v:foo", "less or equal to", 1],
+			"execute": [
+				["scene", 3]
+			]
+		}
+	}
+}

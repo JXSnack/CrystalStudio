@@ -11,6 +11,8 @@ class ScriptValues:
 	VARIABLE_START = "{@"
 	VARIABLE_END = "}"
 
+	in_an_if = 0
+
 
 class MemCheck:
 	def __init__(self, mem: dict):
@@ -41,7 +43,7 @@ class Script:
 				rv += "\t\t\t\t} "
 				functions.pop(0)
 			else:
-				rv += "// No functions\n}"
+				rv += "// No functions\n"
 
 			for func in functions:
 				rv += f"else if (function_name === \"{func}\") " + "{\n"
@@ -51,6 +53,7 @@ class Script:
 			if functions != []:
 				rv += "else { alert(\"ERROR: Cannot 'handleCrystalFunction': \" + function_name + \". Please contact the creator of this game and report this issue on the CrystalStudio GitHub page (github.com/JXSnack/CrystalStudio/issues)\"); \n\t\t\t\t}\n\t\t\t}\n"
 
+			rv += "}" # IMPORTANT
 			return rv
 		else:
 			Error().unknown_lang(self.lang)
@@ -61,7 +64,7 @@ class Script:
 		if not type(self.script["global_variables"][var]) == str:
 			rv += f"\tvar crys_v_{var} = {self.script['global_variables'][var]};\n"
 		else:
-			rv += f"\tvar crys_v_{var} = \"{self.script['global_variables'][var]};\"\n"
+			rv += f"\tvar crys_v_{var} = \"{self.script['global_variables'][var]}\";\n"
 
 		return rv
 
@@ -127,7 +130,7 @@ class ScriptHandler:
 		if text[1 + add_to_text] in ["is", "=="]:
 			if self.lang == BuilderType.JavaScript:
 				try:
-					if text[0] == "elif:":
+					if text[0] == "elif":
 						rv += "}" + f" else if ({cond_1} === {cond_2}) " + "{\n"
 						return rv
 					else:
@@ -212,9 +215,10 @@ class ScriptHandler:
 				try:
 					if type(text[1]) == str:
 						go_to = f"crys_v_{text[1]}"
+						rv += f"updateScene({go_to} - 1);"
 					else:
 						go_to = text[1]
-					rv += f"updateScene({go_to - 1});"
+						rv += f"updateScene({go_to - 1});"
 					return rv
 				except IndexError:
 					print(f"ScriptHandler cannot decode: {text}")
@@ -223,6 +227,15 @@ class ScriptHandler:
 			else:
 				Error().unknown_lang(self.lang)
 				return ""
+
+		elif text[0] == "debugtools": # debug tools
+			if self.lang == BuilderType.JavaScript:
+				if text[1] == "alert var":
+					rv = f"alert(crys_v_{text[2]});"
+					return rv
+				elif text[1] == "alert":
+					rv = f"alert(\"{text[2]}\");"
+					return rv
 
 		elif text[0] == "add":  # add command (plus)
 			if self.lang == BuilderType.JavaScript:
@@ -236,7 +249,7 @@ class ScriptHandler:
 						print(f"Error at {text}")
 						Error().has_to_be(str, type(text[1]))
 
-					rv += f"crys_v_{text[2]} = crys_v_{text[2]} + {num2};"
+					rv += f"crys_v_{text[1]} = crys_v_{text[1]} + {num2};"
 					return rv
 				except IndexError:
 					print(f"ScriptHandler cannot decode: {text}")
@@ -257,7 +270,7 @@ class ScriptHandler:
 					if type(text[1]) != str:
 						Error().has_to_be(str, type(text[1]))
 
-					rv += f"crys_v_{text[2]} = crys_v_{text[2]} + {num2};"
+					rv += f"crys_v_{text[1]} = crys_v_{text[1]} - {num2};"
 					return rv
 				except IndexError:
 					print(f"ScriptHandler cannot decode: {text}")
@@ -278,7 +291,7 @@ class ScriptHandler:
 					if type(text[1]) != str:
 						Error().has_to_be(str, type(text[1]))
 
-					rv += f"crys_v_{text[2]} = crys_v_{text[2]} * {num2};"
+					rv += f"crys_v_{text[1]} = crys_v_{text[1]} * {num2};"
 					return rv
 				except IndexError:
 					print(f"ScriptHandler cannot decode: {text}")
@@ -299,7 +312,7 @@ class ScriptHandler:
 					if type(text[1]) != str:
 						Error().has_to_be(str, type(text[1]))
 
-					rv += f"crys_v_{text[2]} = crys_v_{text[2]} / {num2};"
+					rv += f"crys_v_{text[1]} = crys_v_{text[1]} / {num2};"
 					return rv
 				except IndexError:
 					print(f"ScriptHandler cannot decode: {text}")
@@ -325,6 +338,7 @@ class ScriptHandler:
 			if self.lang == BuilderType.JavaScript:
 				try:
 					rv += ScriptHandler(self.lang).decode_condition(text)
+					ScriptValues.in_an_if = ScriptValues.in_an_if + 1
 					return rv
 				except IndexError:
 					print(f"ScriptHandler cannot decode: {text}")
@@ -333,11 +347,15 @@ class ScriptHandler:
 			else:
 				Error().unknown_lang(self.lang)
 				return ""
-		elif text[0] in ["elif", "else if"]: #
+		elif text[0] in ["elif", "else if"]: # else if statement
 			if self.lang == BuilderType.JavaScript:
 				try:
-					rv += ScriptHandler(self.lang).decode_condition(text)
-					return rv
+					if ScriptValues.in_an_if != 0:
+						rv += ScriptHandler(self.lang).decode_condition(text)
+						return rv
+					else:
+						print("Error: Cannot 'elif' when no if has started")
+						return ""
 				except IndexError:
 					print(f"ScriptHandler cannot decode: {text}")
 					Error().arg_missing("text", 3)
@@ -345,11 +363,29 @@ class ScriptHandler:
 			else:
 				Error().unknown_lang(self.lang)
 				return ""
+		elif text[0] in ["else"]: # else statement
+			if self.lang == BuilderType.JavaScript:
+				try:
+					if ScriptValues.in_an_if != 0:
+						rv += "} else {\n"
+						return rv
+					else:
+						print("Error: Cannot 'else' when no if has started")
+						return ""
+				except IndexError:
+					print(f"ScriptHandler cannot decode: {text}")
+					Error().arg_missing("text", 0)
+			else:
+				Error().unknown_lang(self.lang)
 		elif text[0] == "end": # end if, else, loop, etc
 			if self.lang == BuilderType.JavaScript:
 				try:
-					rv += "}"
-					return rv
+					if ScriptValues.in_an_if > 0:
+						rv += "}"
+						ScriptValues.in_an_if = ScriptValues.in_an_if - 1
+						return rv
+					else:
+						print("Error: Cannot 'end' if there is no if, loop or while")
 				except IndexError:
 					print(f"ScriptHandler cannot decode: {text}")
 					Error().arg_missing("text", 0)
