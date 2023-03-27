@@ -153,7 +153,7 @@ class Creator(QMainWindow):
 
 	def bookmark_remove(self, num):
 		self.hide()
-		BookmarkRemoveDialog(self, num-1)
+		BookmarkRemoveDialog(self, num)
 
 	def open_project_from_bookmark(self, label: QLabel):
 		try:
@@ -426,9 +426,9 @@ class Editor(QWidget):
 		except FileNotFoundError:
 			file = open(f"editor/{name}/script.json", "w")
 
-			self.script_data = {"global_variables": [],
-								"functions": [],
-								"checks": [],
+			self.script_data = {"global_variables": {},
+								"functions": {},
+								"checks": {},
 								}
 
 			json.dump(self.script_data, file)
