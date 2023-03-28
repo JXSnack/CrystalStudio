@@ -36,7 +36,7 @@ class Creator(QMainWindow):
 		self.setWindowTitle("CrystalStudio - (Main menu)")
 
 		self.pic = QLabel(self)
-		self.pic.setPixmap(QPixmap("crys/storage/icon.png"))
+		self.pic.setPixmap(QPixmap("crys/storage/icon/" + settings["icon"][1] + ".png"))
 		self.pic.setScaledContents(True)
 		self.pic.setGeometry(int(10 * self.settings["ui_scale"][1]), int(1 * self.settings["ui_scale"][1]),
 							 int(64 * self.settings["text_scale"][1]), int(64 * self.settings["text_scale"][1]))
@@ -684,16 +684,8 @@ class Editor(QWidget):
 class SettingsWindow(QTabWidget):
 	def __init__(self, parent=None):
 		super(SettingsWindow, self).__init__(parent)
-		self.settings_filepath = "crys/storage/settings.json"
-		settings_file = open(self.settings_filepath, "r")
-		try:
-			self.settings = json.load(settings_file)
-		except json.decoder.JSONDecodeError:
-			file = open(self.settings_filepath, "w")
-			json.dump({"ui_scale": [1, 1.0], "text_scale": [1, 1.0], "theme": [1, "dark"], "custom_theme": ""}, file)
-			file.close()
-			self.settings = json.load(settings_file)
-			print("Settings were corrupted. Settings have been reset")
+
+		self.settings = helper.get_settings()
 
 		self.setFixedSize(int(self.settings["ui_scale"][1] * 540), int(self.settings["ui_scale"][1] * 640))
 
@@ -703,18 +695,21 @@ class SettingsWindow(QTabWidget):
 		self.tab1 = QWidget()
 		self.tab2 = QWidget()
 		self.tab3 = QWidget()
+		self.tab4 = QWidget()
 
 		self.addTab(self.tab1, "General settings")
 		self.addTab(self.tab2, "Color and themes")
+		self.addTab(self.tab4, "Icon")
 		self.addTab(self.tab3, "Save")
 
 		self.build_tab1UI()
 		self.build_tab2UI()
+		self.build_tab4UI()
 		self.build_tab3UI()
 
 		self.fix_css()
 
-		self.setWindowTitle("Settings")
+		self.setWindowTitle("CrystalStudio - (Settings)")
 
 	def build_tab1UI(self):
 		layout1 = QHBoxLayout()
@@ -807,8 +802,40 @@ class SettingsWindow(QTabWidget):
 		layout.addWidget(self.save_btn)
 		layout.addWidget(self.exit_btn)
 
-		self.setTabText(2, "Save")
+		self.setTabText(3, "Save")
 		self.tab3.setLayout(layout)
+
+	def build_tab4UI(self):
+		layout = QVBoxLayout()
+		layout1 = QHBoxLayout()
+		layout2 = QHBoxLayout()
+		layout3 = QHBoxLayout()
+
+		label = QLabel("Current Icon:")
+		self.selected_icon = QComboBox()
+		self.selected_icon.addItem("Default Icon")
+		self.selected_icon.addItem("Mix")
+		self.selected_icon.addItem("Legacy")
+		self.selected_icon.setCurrentIndex(settings["icon"][0])
+		self.selected_icon.currentIndexChanged.connect(lambda: self.save())
+
+		needs_to_update_label = QLabel("Restart CrystalStudio to see change")
+
+		self.preview_icon = QLabel()
+		self.preview_icon.setPixmap(QPixmap("crys/storage/icon/" + settings["icon"][1] + ".png"))
+		self.preview_icon.setScaledContents(True)
+		self.preview_icon.setFixedSize(int(128 * self.settings["ui_scale"][1]), int(128 * self.settings["ui_scale"][1])),
+
+		layout1.addWidget(label)
+		layout1.addWidget(self.selected_icon)
+		layout1.addWidget(needs_to_update_label)
+		layout3.addWidget(self.preview_icon)
+
+		layout.addLayout(layout1)
+		layout.addLayout(layout2)
+		layout.addLayout(layout3)
+		self.setTabText(2, "Icon")
+		self.tab4.setLayout(layout)
 
 	def save(self):
 		self.settings["theme"] = [self.selector3.currentIndex(), self.selector3.currentText().split()[0].lower()]
@@ -860,9 +887,19 @@ class SettingsWindow(QTabWidget):
 				pass
 
 		self.settings["custom_theme"] = self.custom_theme.toPlainText()
-		settings_file = open(self.settings_filepath, "w")
+		new_icon_text = self.selected_icon.currentText()
+		if new_icon_text == "Default Icon":
+			self.settings["icon"][1] = "new_icon"
+		elif new_icon_text == "Mix":
+			self.settings["icon"][1] = "middle"
+		else:
+			self.settings["icon"][1] = "legacy"
+
+		self.settings["icon"][0] = self.selected_icon.currentIndex()
+		settings_file = open(helper.settings_filepath(), "w")
 		json.dump(self.settings, settings_file)
 		settings_file.close()
+		self.preview_icon.setPixmap(QPixmap("crys/storage/icon/" + settings["icon"][1] + ".png"))
 
 		self.fix_css()
 
@@ -874,6 +911,8 @@ class SettingsWindow(QTabWidget):
 	def fix_css(self):
 		self.setStyleSheet(helper.generate_stylesheet())
 		self.setFixedSize(int(self.settings["ui_scale"][1] * 540), int(self.settings["ui_scale"][1] * 640))
+		self.preview_icon.setFixedSize(int(128 * self.settings["ui_scale"][1]), int(128 * self.settings["ui_scale"][1]))
+		self.preview_icon.setPixmap(QPixmap("crys/storage/icon/" + settings["icon"][1] + ".png"))
 
 
 class ButtonEditor(QDialog):
@@ -1138,6 +1177,7 @@ class BuildMenu(QDialog):
 
 
 if __name__ == "__main__":
+	settings = helper.get_settings()
 	app = QApplication(sys.argv)
 
 	# window = BuildMenu(Editor("test", "JX_Snack", "out/"), Editor("test", "JX_Snack", "out/").mem_data,
@@ -1147,6 +1187,6 @@ if __name__ == "__main__":
 	window = Creator()
 	window.show()
 
-	app.setWindowIcon(QIcon('crys/storage/icon.png'))
+	app.setWindowIcon(QIcon("crys/storage/icon/" + settings["icon"][1] + ".png"))
 
 	app.exec()

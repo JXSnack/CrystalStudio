@@ -4,8 +4,7 @@ import subprocess
 
 from crys.crystal import *
 
-version = "1.2.1-SNAPSHOT [public-02]"
-
+version = "1.2.1-SNAPSHOT [public-03]"
 
 def open_file(path: str) -> None:
 	if platform.system() == "Windows":
@@ -27,9 +26,23 @@ def install_requirements() -> None:
 	os.system("python3 -m pip install PyQt6")
 	os.system("python3 -m pip install requests")
 
+def settings_filepath() -> str:
+	return "crys/storage/settings.json"
 
 def get_settings() -> dict:
-	return json.load(open("crys/storage/settings.json", "r"))
+	settings_file = open(settings_filepath(), "r")
+	try:
+		settings = json.load(settings_file)
+	except json.decoder.JSONDecodeError:
+		file = open(settings_filepath(), "w")
+		json.dump({"ui_scale": [1, 1.0], "text_scale": [1, 1.0], "theme": [1, "dark"], "custom_theme": "",
+				   "bookmarked_projects": [], "icon": [0, "new_icon"]}, file)
+		file.close()
+		settings_file2 = open(settings_filepath(), "r")
+
+		settings = json.load(settings_file2)
+		print("Settings were corrupted. Settings have been reset")
+	return settings
 
 
 def generate_stylesheet() -> str:
