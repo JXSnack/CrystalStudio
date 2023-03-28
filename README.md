@@ -25,4 +25,4 @@ Coming soon - We're working on it.
 - HTML (HTML and CSS)
 - Python (Terminal Game)
 \
-<img src="https://raw.githubusercontent.com/JXSnack/CrystalStudio/main/crys/storage/icon.png" width=50px> 
+<img src="https://raw.githubusercontent.com/JXSnack/CrystalStudio/main/crys/storage/icon/new_icon.png" width=50px> <img src="https://raw.githubusercontent.com/JXSnack/CrystalStudio/main/crys/storage/icon/middle.png" width=50px> <img src="https://raw.githubusercontent.com/JXSnack/CrystalStudio/main/crys/storage/icon/legacy.png" width=50px> 
