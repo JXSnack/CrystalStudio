@@ -1,7 +1,10 @@
 import json
 import os
+import shutil
+import io
 import sys
 import time
+import zipfile
 
 import crys.crystal
 import crys.helper as helper
@@ -283,6 +286,7 @@ class Creator(QMainWindow):
 			except RuntimeError:
 				continue
 
+
 class BookmarkRemoveDialog(QMessageBox):
 	def __init__(self, parent, num):
 		super().__init__(parent)
@@ -292,16 +296,19 @@ class BookmarkRemoveDialog(QMessageBox):
 		qm = QMessageBox()
 		qm.setWindowTitle("Are you sure?")
 		qm.setFixedSize(int(200 * self.settings["ui_scale"][1]), int(100 * self.settings["ui_scale"][1]))
-		ret = qm.information(self, 'Are you sure?', f"Are you sure to delete \"{self.settings['bookmarked_projects'][num-1]}\"?", qm.StandardButton.Yes | qm.StandardButton.No, qm.StandardButton.No)
+		ret = qm.information(self, 'Are you sure?',
+							 f"Are you sure to delete \"{self.settings['bookmarked_projects'][num - 1]}\"?",
+							 qm.StandardButton.Yes | qm.StandardButton.No, qm.StandardButton.No)
 
 		if ret == qm.StandardButton.Yes:
-			self.settings['bookmarked_projects'].pop(num-1)
+			self.settings['bookmarked_projects'].pop(num - 1)
 			self.save()
 			qm.hide()
 
 		# self.show()
 		Creator().show()
-		# Creator().bookmark_remove(1)
+
+	# Creator().bookmark_remove(1)
 
 	def save(self):
 		try:
@@ -309,6 +316,7 @@ class BookmarkRemoveDialog(QMessageBox):
 			json.dump(self.settings, file)
 		except:
 			print("Error while ")
+
 
 class BookmarksDialog(QDialog):
 	def __init__(self, parent):
@@ -825,7 +833,8 @@ class SettingsWindow(QTabWidget):
 		self.preview_icon = QLabel()
 		self.preview_icon.setPixmap(QPixmap("crys/storage/icon/" + settings["icon"][1] + ".png"))
 		self.preview_icon.setScaledContents(True)
-		self.preview_icon.setFixedSize(int(128 * self.settings["ui_scale"][1]), int(128 * self.settings["ui_scale"][1])),
+		self.preview_icon.setFixedSize(int(128 * self.settings["ui_scale"][1]),
+									   int(128 * self.settings["ui_scale"][1])),
 
 		layout1.addWidget(label)
 		layout1.addWidget(self.selected_icon)
@@ -1176,6 +1185,7 @@ class BuildMenu(QDialog):
 	def cancel(self):
 		self.hide()
 
+
 class UpdateWindow(QDialog):
 	def __init__(self):
 		super().__init__()
@@ -1191,7 +1201,8 @@ class UpdateWindow(QDialog):
 		self.buttonBox.rejected.connect(self.reject)
 
 		self.layout = QVBoxLayout()
-		self.message = QLabel(f"There is a new update available.\n\nYour version: {latest_update}\nNew version: {data}\n\nClick OK to continue or CANCEL to use your outdated and unsecure version of CrystalStudio")
+		self.message = QLabel(
+			f"There is a new update available.\n\nYour version: {latest_update}\nNew version: {data}\n\nClick OK to continue or CANCEL to use your outdated and unsecure version of CrystalStudio")
 		self.message.setOpenExternalLinks(True)
 		self.update_state = QLabel(f"")
 		self.layout.addWidget(self.message)
@@ -1204,6 +1215,41 @@ class UpdateWindow(QDialog):
 		self.message.setText("Updating...")
 		self.buttonBox.deleteLater()
 		self.update_state.setText("State: Downloading update files")
+		download_url = f"https://github.com/JXSnack/CrystalStudio/archive/refs/tags/v{data}.zip"  # set the download url
+		r = requests.get(download_url, allow_redirects=True, stream=True)  # get the download
+		z = zipfile.ZipFile(io.BytesIO(r.content))  # get the zipfile
+		csuf = "CrystalStudioUpdaterFiles"  # set the folder name
+		download_name = f"CrystalStudio-{data}"  # set the downloaded file name
+		os.mkdir(csuf)  # make the folder
+		z.extractall(f"{csuf}/")  # extract the zip
+		csuf = csuf + f"/{download_name}"  # set the new folder name
+
+		self.update_state.setText("State: Making a settings backup")
+		settings_backup = json.load(open("crys/storage/settings.json"))  # make a settings backup
+		self.update_state.setText("State: Removing old code")
+		shutil.rmtree("crys")  # remove the old crystal studio code folder
+
+		os.remove("main.py")  # remove the old main.py
+		os.remove("editor.py")  # remove old editor.py
+
+		self.update_state.setText("State: Replacing old code with new code")
+		shutil.move(csuf + "/crys", os.getcwd())  # move the new code folder to the place where the old one was
+		new_mainfile_content = open(csuf + "/main.py", "r").readlines()  # get new content
+		new_mainfile = open("main.py", "w").write("".join(new_mainfile_content))  # place it there where it belongs
+
+		new_editor_content = open(csuf + "/editor.py", "r").readlines()  # get new content
+		new_editor = open("editor.py", "w").write("".join(new_editor_content))  # place it there where it belongs
+
+		json.dump(settings_backup, open("crys/storage/settings.json", "w"))  # place the settings backup
+
+		shutil.rmtree("CrystalStudioUpdaterFiles")  # clean up the mess that we made
+		self.update_state.setText("State: Cleaning up...")
+		self.update_state.deleteLater()
+		self.allow_quit = 0 # allow quitting
+		self.message.setText("Finished! You can now close this window start the editor")
+
+		# Finished
+		print(f"Finished updating to {data}!")
 
 	def reject(self):
 		if not self.updating:
@@ -1213,7 +1259,8 @@ class UpdateWindow(QDialog):
 		else:
 			if self.allow_quit != 0:
 				print("Warning: This can cause severe issues!")
-				self.message.setText(f"Updating... EXITING NOW CAN CAUSE SEVERE ISSUES! Click {self.allow_quit} time(s) more if you want to quit")
+				self.message.setText(
+					f"Updating... EXITING NOW CAN CAUSE SEVERE ISSUES! Click {self.allow_quit} time(s) more if you want to quit")
 				self.allow_quit -= 1
 			else:
 				sys.exit(0)
@@ -1237,7 +1284,8 @@ if __name__ == "__main__":
 		response = requests.get(update_url)
 		data = response.text
 		if data.startswith("<!DOCTYPE"):
-			print(f"Critical error while trying to check for last update: Updater not found. \nPLEASE REPORT THIS ISSUE ON GITHUB. THIS IS A CRITICAL BUG (Dev info: Updater gone?)")
+			print(
+				f"Critical error while trying to check for last update: Updater not found. \nPLEASE REPORT THIS ISSUE ON GITHUB. THIS IS A CRITICAL BUG (Dev info: Updater gone?)")
 			print(f"\nInfo: Latest update: {latest_update}")
 			print(f"\rUpdate URL: {update_url}\n")
 			input("Type anything if you have copied the error > ")
@@ -1249,7 +1297,7 @@ if __name__ == "__main__":
 		else:
 			update_num = data.split(".")
 			my_update_num = latest_update.split(".")
-			if my_update_num[0] < update_num[0] or my_update_num[1] < update_num[1] or my_update_num[2] < update_num[2]:
+			if int(my_update_num[0]) < int(update_num[0]) or (my_update_num[1]) < (update_num[1]) or (my_update_num[2]) < (update_num[2]):
 				print(f"You are not on the latest version.\nYour version: {latest_update}\nLatest version: {data}")
 				window = UpdateWindow()
 				window.show()
@@ -1259,7 +1307,8 @@ if __name__ == "__main__":
 				window.show()
 
 	except Exception as err:
-		print(f"Critical error while trying to check latest update: {err} \nPLEASE REPORT THIS ISSUE ON GITHUB. THIS IS A CRITICAL BUG (Dev info: Server not exist?)")
+		print(
+			f"Critical error while trying to check latest update: {err} \nPLEASE REPORT THIS ISSUE ON GITHUB. THIS IS A CRITICAL BUG (Dev info: Server not exist?)")
 		print(f"\nInfo: Latest update: {latest_update}")
 		print(f"\rUpdate URL: {update_url}\n")
 		input("Type anything if you have copied the error > ")
