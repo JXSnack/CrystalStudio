@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import time
 
 import crys.crystal
 import crys.helper as helper
@@ -1175,6 +1176,48 @@ class BuildMenu(QDialog):
 	def cancel(self):
 		self.hide()
 
+class UpdateWindow(QDialog):
+	def __init__(self):
+		super().__init__()
+		self.updating = False
+		self.allow_quit = 3
+
+		self.setWindowTitle("CrystalStudio Updater")
+
+		self.QBtn = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+
+		self.buttonBox = QDialogButtonBox(self.QBtn)
+		self.buttonBox.accepted.connect(self.accept)
+		self.buttonBox.rejected.connect(self.reject)
+
+		self.layout = QVBoxLayout()
+		self.message = QLabel(f"There is a new update available.\n\nYour version: {latest_update}\nNew version: {data}\n\nClick OK to continue or CANCEL to use your outdated and unsecure version of CrystalStudio")
+		self.message.setOpenExternalLinks(True)
+		self.update_state = QLabel(f"")
+		self.layout.addWidget(self.message)
+		self.layout.addWidget(self.update_state)
+		self.layout.addWidget(self.buttonBox)
+		self.setLayout(self.layout)
+
+	def accept(self):
+		self.updating = True
+		self.message.setText("Updating...")
+		self.buttonBox.deleteLater()
+		self.update_state.setText("State: Downloading update files")
+
+	def reject(self):
+		if not self.updating:
+			self.hide()
+			window = Creator()
+			window.show()
+		else:
+			if self.allow_quit != 0:
+				print("Warning: This can cause severe issues!")
+				self.message.setText(f"Updating... EXITING NOW CAN CAUSE SEVERE ISSUES! Click {self.allow_quit} time(s) more if you want to quit")
+				self.allow_quit -= 1
+			else:
+				sys.exit(0)
+
 
 if __name__ == "__main__":
 	settings = helper.get_settings()
@@ -1184,9 +1227,44 @@ if __name__ == "__main__":
 	# 				   Editor("test", "JX_Snack", "out/").editor_data)
 	# window = Editor("test", "JX_Snack", "out/")
 	# window = SettingsWindow()
-	window = Creator()
-	window.show()
 
 	app.setWindowIcon(QIcon("crys/storage/icon/" + settings["icon"][1] + ".png"))
+
+	print("Checking for updates...")
+	latest_update = open("crys/storage/latest_update.txt", "r").readline().replace("\n", "")
+	update_url = "https://snackbag.net/contents/CrystalProject/latest_update.txt"
+	try:
+		response = requests.get(update_url)
+		data = response.text
+		if data.startswith("<!DOCTYPE"):
+			print(f"Critical error while trying to check for last update: Updater not found. \nPLEASE REPORT THIS ISSUE ON GITHUB. THIS IS A CRITICAL BUG (Dev info: Updater gone?)")
+			print(f"\nInfo: Latest update: {latest_update}")
+			print(f"\rUpdate URL: {update_url}\n")
+			input("Type anything if you have copied the error > ")
+			print(f"\n\n\n---------------------------- DEV INFO ----------------------------\n{data}")
+			input("Type anything if you have copied the dev info > ")
+			print("Please report this issue on GitHub!")
+			time.sleep(10)
+			sys.exit(1)
+		else:
+			update_num = data.split(".")
+			my_update_num = latest_update.split(".")
+			if my_update_num[0] < update_num[0] or my_update_num[1] < update_num[1] or my_update_num[2] < update_num[2]:
+				print(f"You are not on the latest version.\nYour version: {latest_update}\nLatest version: {data}")
+				window = UpdateWindow()
+				window.show()
+			else:
+				print("You are on the latest version")
+				window = Creator()
+				window.show()
+
+	except Exception as err:
+		print(f"Critical error while trying to check latest update: {err} \nPLEASE REPORT THIS ISSUE ON GITHUB. THIS IS A CRITICAL BUG (Dev info: Server not exist?)")
+		print(f"\nInfo: Latest update: {latest_update}")
+		print(f"\rUpdate URL: {update_url}\n")
+		input("Type anything if you have copied the error > ")
+		print("Please report this issue on GitHub!")
+		time.sleep(10)
+		sys.exit(1)
 
 	app.exec()
