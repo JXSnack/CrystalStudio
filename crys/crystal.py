@@ -1,14 +1,20 @@
-import json
 import os
+import shutil
+
 from crys.script import *
 
+from PyQt6.QtCore import *
+from PyQt6.QtGui import *
+from PyQt6.QtWidgets import *
 
 class Game:
-	def __init__(self, game: dict, how: BuilderType, from_editor: bool = False) -> None:
+	def __init__(self, game: dict, how: BuilderType, from_editor: bool = False,
+				 replace_old_build: bool = False) -> None:
 		self.game = game  # what game
 		self.build_type = how  # how should it be exported?
-		self.mem = game # memory for all MemCheck(self.mem)
-		self.from_editor = from_editor # does the request come from the editor?
+		self.mem = game  # memory for all MemCheck(self.mem)
+		self.from_editor = from_editor  # does the request come from the editor?
+		self.replace_old_build = replace_old_build  # should we replace the old build?
 
 		self.name = game["info"]["name"]  # game name
 		self.authors = ", ".join(game["info"]["authors"])  # authors
@@ -25,6 +31,13 @@ class Game:
 			print("Sadly, this builder type isn't ready yet. Try another one!")
 		elif self.build_type == BuilderType.JavaScript:
 			print("Building game with " + BuilderType.JavaScript["builder_type"])
+			if self.replace_old_build == Qt.CheckState.Checked:
+				print("Trying to replace old build...")
+				try:
+					shutil.rmtree(self.out + "JavaScript/")
+					print("Deleted old build")
+				except FileNotFoundError:
+					print("No old build found to delete!")
 			returned_game = f"""
 			<!DOCTYPE html>
 <html lang="en">
@@ -81,17 +94,18 @@ button {
 			cs_funcs = ""
 			cs_checks = ""
 			cs_func_handler = ""
-			for var in script["global_variables"]: # variables
+			for var in script["global_variables"]:  # variables
 				cs_vars += Script(script, BuilderType.JavaScript).make_var(var)
 
-			for func in script["functions"]: # functions
+			for func in script["functions"]:  # functions
 				cs_funcs += Script(script, BuilderType.JavaScript).make_func(func)
 
-			for check in script["checks"]: # checks
+			for check in script["checks"]:  # checks
 				cs_checks += Script(script, BuilderType.JavaScript).make_check(check)
 
 			# function handler
-			cs_func_handler += Script(script, BuilderType.JavaScript).make_function_handler(MemCheck(self.mem).get_all_functions())
+			cs_func_handler += Script(script, BuilderType.JavaScript).make_function_handler(
+				MemCheck(self.mem).get_all_functions())
 
 			# variables
 			variables = []
@@ -272,7 +286,9 @@ button {
 			"""
 
 			for i998 in range(len(variables)):
-				returned_player = str(returned_player).replace(ScriptValues.VARIABLE_START + variables[i998] + ScriptValues.VARIABLE_END, f"\' + crys_v_{variables[i998]} + \'")
+				returned_player = str(returned_player).replace(
+					ScriptValues.VARIABLE_START + variables[i998] + ScriptValues.VARIABLE_END,
+					f"\' + crys_v_{variables[i998]} + \'")
 
 			player.write(returned_player)
 			player.close()
@@ -281,4 +297,3 @@ button {
 				print("Error: Exported game may not work, because not all ifs, loops and/or whiles are 'end'ed!")
 
 			print("Finished")
-

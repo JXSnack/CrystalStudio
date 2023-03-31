@@ -6,10 +6,6 @@ import sys
 import time
 import zipfile
 
-import crys.crystal
-import crys.helper as helper
-from crys.script import MemCheck
-
 try:
 	from PyQt6.QtCore import *
 	from PyQt6.QtGui import *
@@ -19,10 +15,17 @@ try:
 
 	import requests
 except ImportError:
+	import crys.crystal
+	import crys.helper as helper
+	from crys.script import MemCheck
+
 	helper.install_requirements()
 	print("\nPlease start the editor again! If it said something with the Microsoft store, please do these three commands in the PyCharm command line:\npip install --upgrade pip\npip install PyQt6\npip install requests")
 	sys.exit(0)
 
+import crys.crystal
+import crys.helper as helper
+from crys.script import MemCheck
 
 class Creator(QMainWindow):
 	def __init__(self):
@@ -1311,13 +1314,18 @@ class BuildMenu(QDialog):
 
 		self.layout = QVBoxLayout()
 		self.layout1 = QHBoxLayout()
+		self.layout3 = QHBoxLayout()
 		self.layout2 = QHBoxLayout()
 
 		message1 = QLabel("Builder type:")
+		message2 = QLabel("Replace old build:")
 		self.labels.append(message1)
 		self.builder_type = QComboBox()
 		self.builder_type.insertItem(0, "Web application (JavaScript, HTML, CSS)")
 		self.lines.append(self.builder_type)
+
+		self.replace_check = QCheckBox()
+		self.replace_check.setChecked(True)
 
 		cancel = QPushButton("Cancel")
 		cancel.clicked.connect(lambda: self.cancel())
@@ -1328,10 +1336,13 @@ class BuildMenu(QDialog):
 
 		self.layout1.addWidget(message1)
 		self.layout1.addWidget(self.builder_type)
+		self.layout3.addWidget(message2)
+		self.layout3.addWidget(self.replace_check)
 		self.layout2.addWidget(cancel)
 		self.layout2.addWidget(save)
 
 		self.layout.addLayout(self.layout1)
+		self.layout.addLayout(self.layout3)
 		self.layout.addLayout(self.layout2)
 
 		self.setLayout(self.layout)
@@ -1341,11 +1352,12 @@ class BuildMenu(QDialog):
 		self.fix_css()
 
 	def fix_css(self):
+		self.replace_check.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 		self.setStyleSheet(helper.generate_stylesheet())
 
 	def build_btn_clicked(self):
 		try:
-			crys.crystal.Game(self.mem, helper.translate_builder(self.builder_type.currentText()), True).build()
+			crys.crystal.Game(self.mem, helper.translate_builder(self.builder_type.currentText()), True, self.replace_check.checkState()).build()
 			helper.open_file(f"editor/{self.mem['info']['name']}/{self.mem['info']['out']}")
 			self.hide()
 			Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
