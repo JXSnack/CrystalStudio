@@ -1,1 +1,15 @@
-{"global_variables": {}, "functions": {}, "checks": {}}
+{
+	"global_variables": {
+		"input_value": ""
+	},
+	"functions": {
+		"read_stuff": [
+			["get", 0, 2, "value", "input_value"],
+			["log", "input_value"]
+		]
+
+	},
+	"checks": {
+
+	}
+}

@@ -27,9 +27,10 @@ class MemCheck:
 
 
 class Script:
-	def __init__(self, script, lang):
+	def __init__(self, script, lang, mem):
 		self.script = script
 		self.lang = lang
+		self.mem = mem
 
 	def make_function_handler(self, functions: list):
 		rv = ""
@@ -74,7 +75,7 @@ class Script:
 			rv = ""
 			rv += f"\tfunction crys_f_{func}() " + "{\n"
 			for un_code in func_exec:
-				code = ScriptHandler(self.lang).decode(un_code)
+				code = ScriptHandler(self.lang, self.mem).decode(un_code)
 				rv += f"\t\t{code}\n"
 
 			rv += "\t}\n\n"
@@ -88,10 +89,10 @@ class Script:
 		check_condition = self.script["checks"][check]["condition"]
 		check_exec = self.script["checks"][check]["execute"]
 
-		rv += ScriptHandler(self.lang).decode_condition(check_condition) + f"// {check}\n"
+		rv += ScriptHandler(self.lang, self.mem).decode_condition(check_condition) + f"// {check}\n"
 
 		for un_code in check_exec:
-			code = ScriptHandler(self.lang).decode(un_code)
+			code = ScriptHandler(self.lang, self.mem).decode(un_code)
 			rv += f"{code}"
 
 		rv += "\t}\n\n"
@@ -100,8 +101,9 @@ class Script:
 
 
 class ScriptHandler:
-	def __init__(self, lang):
+	def __init__(self, lang, mem):
 		self.lang = lang
+		self.mem = mem
 
 	def decode_condition(self, text: list):
 		rv = ""
@@ -258,6 +260,23 @@ class ScriptHandler:
 			else:
 				Error().unknown_lang(self.lang)
 				return ""
+		elif text[0] == "set": # set command
+			if self.lang == BuilderType.JavaScript:
+				try:
+					if type(text[1] == str):
+						rv += f"crys_v_{text[1]} = \"{text[2]}\""
+					else:
+						rv += f"crys_v_{text[1]} = {str(text[2]).lower()}" # lower for boolean stuff
+
+					return rv
+				except IndexError:
+					print(f"ScriptHandler cannot decode: {text}")
+					Error().arg_missing("text", 2)
+					return f""
+			else:
+				print(f"ScriptHandler cannot decode: {text}")
+				Error().unknown_lang(self.lang)
+				return ""
 
 		elif text[0] == "remove":  # remove command (minus)
 			if self.lang == BuilderType.JavaScript:
@@ -268,6 +287,7 @@ class ScriptHandler:
 						num2 = text[2]
 
 					if type(text[1]) != str:
+						print(f"Error at {text}")
 						Error().has_to_be(str, type(text[1]))
 
 					rv += f"crys_v_{text[1]} = crys_v_{text[1]} - {num2};"
@@ -286,6 +306,7 @@ class ScriptHandler:
 					if type(text[2]) == str:
 						num2 = f"crys_v_{text[1]}"
 					else:
+						print(f"Error at {text}")
 						num2 = text[2]
 
 					if type(text[1]) != str:
@@ -310,6 +331,7 @@ class ScriptHandler:
 						num2 = text[2]
 
 					if type(text[1]) != str:
+						print(f"Error at {text}")
 						Error().has_to_be(str, type(text[1]))
 
 					rv += f"crys_v_{text[1]} = crys_v_{text[1]} / {num2};"
@@ -337,7 +359,7 @@ class ScriptHandler:
 		elif text[0] == "if":  # if condition
 			if self.lang == BuilderType.JavaScript:
 				try:
-					rv += ScriptHandler(self.lang).decode_condition(text)
+					rv += ScriptHandler(self.lang, self.mem).decode_condition(text)
 					ScriptValues.in_an_if = ScriptValues.in_an_if + 1
 					return rv
 				except IndexError:
@@ -351,7 +373,7 @@ class ScriptHandler:
 			if self.lang == BuilderType.JavaScript:
 				try:
 					if ScriptValues.in_an_if != 0:
-						rv += ScriptHandler(self.lang).decode_condition(text)
+						rv += ScriptHandler(self.lang, self.mem).decode_condition(text)
 						return rv
 					else:
 						print("Error: Cannot 'elif' when no if has started")
@@ -396,10 +418,70 @@ class ScriptHandler:
 		elif text[0] == "log":  # log function
 			if self.lang == BuilderType.JavaScript:
 				try:
-					rv += f"console.log({text[1]})"
+					rv += f"console.log(crys_v_{text[1]})"
+					return rv
 				except IndexError:
 					print(f"ScriptHandler cannot decode: {text}")
 					Error().arg_missing("text", 1)
+					return ""
+			else:
+				Error().unknown_lang(self.lang)
+				return ""
+		elif text[0] == "get": # get command
+			"""["get", <scene>, <element-id>, "<get something>", "<save-as>"]"""
+			if self.lang == BuilderType.JavaScript:
+				try:
+					if type(text[1]) == int: # scene
+						scene_id = int(text[1])
+						if len(self.mem["scenes"]) >= scene_id: # check if the scene could even exist
+							if type(text[2] == int): # element
+								element_id = int(text[2])
+								if len(self.mem["scenes"][scene_id]["buttons"]) >= element_id: # check if the element could even exist
+									element = self.mem["scenes"][scene_id]["buttons"][element_id]
+									element_type = int(element[0])
+									if type(element_type) == str: # if element type is button
+										if text[3] == "text":
+											rv += f"game[{scene_id}][\"buttons\"][{element_id}][0]"
+										elif text[3] == "link":
+											rv +=  f"game[{scene_id}][\"buttons\"][{element_id}][1]"
+										else:
+											print(f"ScriptHandler cannot decode: {text}")
+											Error().has_to_be("'text' or 'link'", text[3])
+									elif element_type == 1: # if element type is input field
+										if text[3] == "label":
+											rv += f"game[{scene_id}][\"buttons\"][{element_id}][1]"
+										elif text[3] == "value":
+											rv += f"game[{scene_id}][\"buttons\"][{element_id}][2]"
+										else:
+											print(f"ScriptHandler cannot decode: {text}")
+											Error().has_to_be("'label' or 'value'", text[3])
+									else:
+										print(f"ScriptHandler cannot decode: {text}")
+										Error().unknown_element_type(element_type, f"'{text}'")
+
+									rv = f"crys_v_{text[4]} = {rv};"
+
+									return rv
+								else:
+									print(f"ScriptHandler cannot decode: {text}")
+									Error().unknown_element_id(element_id)
+							else:
+								print(f"ScriptHandler cannot decode: {text}")
+								Error().has_to_be(int, type(text[2]))
+						else:
+							print(f"ScriptHandler cannot decode: {text}")
+							Error().unknown_scene_id(scene_id)
+					else:
+						print(f"ScriptHandler cannot decode: {text}")
+						Error().has_to_be(int, type(text[1]))
+				except IndexError:
+					print(f"ScriptHandler cannot decode: {text}")
+					Error().arg_missing("text", 4)
+			else:
+				print(f"ScriptHandler cannot decode: {text}")
+				Error().unknown_lang(self.lang)
+				return ""
+
 		else:
 			Error().unknown_cmd(text)
 			return ""
@@ -428,3 +510,14 @@ class Error:
 	def unknown_cond(self, condition):
 		print(f"Error: Unknown condition: {condition}")
 		sys.exit(0)
+
+	def unknown_element_type(self, type_, while_trying_to):
+		print(f"Error: Unknown element type: {type_}. Error occurred while trying to {while_trying_to}.\n\nPlease report this issue on GitHub!")
+		sys.exit(0)
+
+	def unknown_element_id(self, id_):
+		print(f"Error: Unknown element id: {id_}. Check if that element actually exists!")
+		sys.exit(0)
+
+	def unknown_scene_id(self, id_):
+		print(f"Error: Unknown scene id: {id_}. Check if that scene actually exists!")

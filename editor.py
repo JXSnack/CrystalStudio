@@ -1496,7 +1496,7 @@ if __name__ == "__main__":
 
 	except Exception as err:
 		print(
-			f"Critical error while trying to check latest update: {err} \nPLEASE REPORT THIS ISSUE ON GITHUB. THIS IS A CRITICAL BUG (Dev info: Server not exist?)")
+			f"Critical error while trying to check latest update: {err} \nPLEASE REPORT THIS ISSUE ON GITHUB. THIS IS A CRITICAL BUG (Dev info: Server not exists?)")
 		print(f"\nInfo: Latest update: {latest_update}")
 		print(f"\rUpdate URL: {update_url}\n")
 		input("Type anything if you have copied the error > ")

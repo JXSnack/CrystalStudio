@@ -95,16 +95,16 @@ button {
 			cs_checks = ""
 			cs_func_handler = ""
 			for var in script["global_variables"]:  # variables
-				cs_vars += Script(script, BuilderType.JavaScript).make_var(var)
+				cs_vars += Script(script, BuilderType.JavaScript, self.mem).make_var(var)
 
 			for func in script["functions"]:  # functions
-				cs_funcs += Script(script, BuilderType.JavaScript).make_func(func)
+				cs_funcs += Script(script, BuilderType.JavaScript, self.mem).make_func(func)
 
 			for check in script["checks"]:  # checks
-				cs_checks += Script(script, BuilderType.JavaScript).make_check(check)
+				cs_checks += Script(script, BuilderType.JavaScript, self.mem).make_check(check)
 
 			# function handler
-			cs_func_handler += Script(script, BuilderType.JavaScript).make_function_handler(
+			cs_func_handler += Script(script, BuilderType.JavaScript, self.mem).make_function_handler(
 				MemCheck(self.mem).get_all_functions())
 
 			# variables
