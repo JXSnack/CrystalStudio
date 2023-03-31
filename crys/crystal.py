@@ -132,11 +132,12 @@ button {
   
   // CrystalScript functions
 {cs_funcs}
-  
+
   // CrystalStudio init game
   var game = {str(self.scenes)}
   var game_running = true
   var current_scene = 0
+  
   
   // CrystalScript checks
   crys_manager_checker = setInterval(function ()
@@ -144,7 +145,7 @@ button {
 			returned_player += " {\n"
 			returned_player += cs_checks + "\n}, 200)\n\n\n"
 			returned_player += "crys_internal_updater = setInterval(function () {\n"
-			returned_player += f"\tgame = {str(self.scenes)}\nupdateScene(current_scene)\n"
+			returned_player += f"\tgame = game\nupdateScene(current_scene)\n"
 			returned_player += "}, 500)\n\n\n"
 			returned_player += f"""
 			// CrystalScript Handlers
@@ -161,7 +162,11 @@ button {
       setText("title", game[scene]["title"])
 	  clearDiv("buttons")
 	  for (let i2 = 0; i2 < game[current_scene]["buttons"].length;) {
-	    createButton(game[current_scene]["buttons"][i2][0], game[current_scene]["buttons"][i2][1], i2)
+	    if (game[current_scene]["buttons"][i2][0] === 1) {
+        createInput(game[current_scene]["buttons"][i2][1], game[current_scene]["buttons"][i2][2], i2)
+      } else {
+        createButton(game[current_scene]["buttons"][i2][0], game[current_scene]["buttons"][i2][1], i2)
+      }
 	    i2++;
 	  }
       createMainMenuButton("Back to main menu")
@@ -200,6 +205,46 @@ button {
 
     document.getElementById("buttons").appendChild(btn)
     btn = null
+
+    var br = document.createElement("br")
+    document.getElementById("buttons").appendChild(br)
+    br = null
+
+    var br = document.createElement("br")
+    document.getElementById("buttons").appendChild(br)
+    br = null
+  }
+
+  function createMainMenuButton(name) {
+    var btn = document.createElement("button")
+    btn.innerHTML = name
+    btn.onclick = function () {
+      window.location.replace("index.html");
+    }
+
+    document.getElementById("buttons").appendChild(btn)
+    btn = null
+  }
+
+  function createInput(label, default_vaulue, id) {
+    var lab = document.createElement("label")
+    lab.innerHTML = label
+
+    document.getElementById("buttons").appendChild(lab)
+    lab = null
+
+    var inp = document.createElement("input")
+    inp.value = default_vaulue
+    inp.addEventListener('click', function() {
+      var new_value = prompt("Enter new value");
+      // alert(game[current_scene]["buttons"][id][2])
+      while (game[current_scene]["buttons"][id][2] !== new_value) {
+        game[current_scene]["buttons"][id][2] = new_value
+      }
+      // alert(game[current_scene]["buttons"][id][2])
+      new_value = null
+    })
+    document.getElementById("buttons").appendChild(inp)
 
     var br = document.createElement("br")
     document.getElementById("buttons").appendChild(br)

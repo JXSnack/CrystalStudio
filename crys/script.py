@@ -53,7 +53,7 @@ class Script:
 			if functions != []:
 				rv += "else { alert(\"ERROR: Cannot 'handleCrystalFunction': \" + function_name + \". Please contact the creator of this game and report this issue on the CrystalStudio GitHub page (github.com/JXSnack/CrystalStudio/issues)\"); \n\t\t\t\t}\n\t\t\t}\n"
 
-			rv += "}" # IMPORTANT
+			rv += "}"  # IMPORTANT
 			return rv
 		else:
 			Error().unknown_lang(self.lang)
@@ -228,7 +228,7 @@ class ScriptHandler:
 				Error().unknown_lang(self.lang)
 				return ""
 
-		elif text[0] == "debugtools": # debug tools
+		elif text[0] == "debugtools":  # debug tools
 			if self.lang == BuilderType.JavaScript:
 				if text[1] == "alert var":
 					rv = f"alert(crys_v_{text[2]});"
@@ -334,7 +334,7 @@ class ScriptHandler:
 			else:
 				Error().unknown_lang(self.lang)
 				return ""
-		elif text[0] == "if": # if condition
+		elif text[0] == "if":  # if condition
 			if self.lang == BuilderType.JavaScript:
 				try:
 					rv += ScriptHandler(self.lang).decode_condition(text)
@@ -347,7 +347,7 @@ class ScriptHandler:
 			else:
 				Error().unknown_lang(self.lang)
 				return ""
-		elif text[0] in ["elif", "else if"]: # else if statement
+		elif text[0] in ["elif", "else if"]:  # else if statement
 			if self.lang == BuilderType.JavaScript:
 				try:
 					if ScriptValues.in_an_if != 0:
@@ -363,7 +363,7 @@ class ScriptHandler:
 			else:
 				Error().unknown_lang(self.lang)
 				return ""
-		elif text[0] in ["else"]: # else statement
+		elif text[0] in ["else"]:  # else statement
 			if self.lang == BuilderType.JavaScript:
 				try:
 					if ScriptValues.in_an_if != 0:
@@ -377,7 +377,7 @@ class ScriptHandler:
 					Error().arg_missing("text", 0)
 			else:
 				Error().unknown_lang(self.lang)
-		elif text[0] == "end": # end if, else, loop, etc
+		elif text[0] == "end":  # end if, else, loop, etc
 			if self.lang == BuilderType.JavaScript:
 				try:
 					if ScriptValues.in_an_if > 0:
@@ -393,7 +393,7 @@ class ScriptHandler:
 			else:
 				Error().unknown_lang(self.lang)
 				return ""
-		elif text[0] == "log": # log function
+		elif text[0] == "log":  # log function
 			if self.lang == BuilderType.JavaScript:
 				try:
 					rv += f"console.log({text[1]})"

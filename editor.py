@@ -15,10 +15,12 @@ try:
 	from PyQt6.QtGui import *
 	from PyQt6.QtWidgets import *
 
+	from crys import QExtension
+
 	import requests
 except ImportError:
 	helper.install_requirements()
-	print("\nPlease start the editor again!")
+	print("\nPlease start the editor again! If it said something with the Microsoft store, please do these three commands in the PyCharm command line:\npip install --upgrade pip\npip install PyQt6\npip install requests")
 	sys.exit(0)
 
 
@@ -315,7 +317,7 @@ class BookmarkRemoveDialog(QMessageBox):
 			file = open("crys/storage/settings.json", "w")
 			json.dump(self.settings, file)
 		except:
-			print("Error while ")
+			print("Error while removing bookmark")
 
 
 class BookmarksDialog(QDialog):
@@ -380,6 +382,9 @@ class BookmarksDialog(QDialog):
 	def cancel(self):
 		self.hide()
 		Creator().show()
+
+	def closeEvent(self, event):
+		self.cancel()
 
 
 class Editor(QWidget):
@@ -451,7 +456,7 @@ class Editor(QWidget):
 	def build_ui(self):
 		self.fix_css()
 
-		self.layout = QGridLayout(self)
+		self.layout = QVBoxLayout(self)
 		self.layout.setContentsMargins(int(200 * self.settings["ui_scale"][1]), int(200 * self.settings["ui_scale"][1]),
 									   int(200 * self.settings["ui_scale"][1]), int(200 * self.settings["ui_scale"][1]))
 
@@ -472,6 +477,12 @@ class Editor(QWidget):
 		add_button_btn.adjustSize()
 		add_button_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
+		add_input_btn = QPushButton(self)
+		add_input_btn.setText("+ Input field")
+		add_input_btn.clicked.connect(lambda: self.add_input())
+		add_input_btn.adjustSize()
+		add_input_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+
 		remove_scene_btn = QPushButton(self)
 		remove_scene_btn.setText("-")
 		remove_scene_btn.clicked.connect(lambda: self.remove_scene())
@@ -481,7 +492,7 @@ class Editor(QWidget):
 		build_btn = QPushButton(self)
 		build_btn.setText("Build game")
 		build_btn.adjustSize()
-		build_btn.clicked.connect(lambda: BuildMenu(self, self.mem_data, self.editor_data).show())
+		build_btn.clicked.connect(lambda: self.open_build_menu())
 
 		self.save_btn = QPushButton(self)
 		self.save_btn.setText("Save")
@@ -519,6 +530,10 @@ class Editor(QWidget):
 		add_button_btn.setStyleSheet(
 			'color: white; background-color: rgb(59, 171, 130); border: 1px solid rgb(59, 171, 130);')
 
+		add_input_btn.move(int(1780 * self.settings["ui_scale"][1]), int(150 * self.settings["ui_scale"][1]))
+		add_input_btn.setFixedSize(int(130 * self.settings["ui_scale"][1]), int(40 * self.settings["ui_scale"][1]))
+		add_input_btn.setStyleSheet('color: white; background-color: rgb(59, 171, 130); border: 1px solid rgb(59, 171, 130);')
+
 		remove_scene_btn.move(int(1780 * self.settings["ui_scale"][1]), int(60 * self.settings["ui_scale"][1]))
 		remove_scene_btn.setStyleSheet(
 			'color: white; background-color: rgb(179, 0, 0); border: 1px solid rgb(179, 0, 0);')
@@ -549,17 +564,31 @@ class Editor(QWidget):
 		lab.setStyleSheet("font-size: " + str(int(32 * self.settings["ui_scale"][1])) + "px;}")
 		lab.adjustSize()
 		self.preview.append(lab)
-		self.layout.addWidget(lab, 0, 0)
+		self.layout.addWidget(lab)
 		throw_away = 0
 		num = 0
 		for i1000 in range(len(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"])):
 			try:
-				btn = QPushButton(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][i1000][0])
-				btn.clicked.connect(
-					lambda throw_away, btn=btn, num=num: self.btn_editor(btn, self.scenes_widget.currentIndex(), num))
-				self.preview.append(btn)
-				self.layout.addWidget(btn)
-				num += 1
+				if type(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][i1000][0]) == str: # button
+					btn = QPushButton(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][i1000][0])
+					btn.clicked.connect(
+						lambda throw_away, btn=btn, num=num: self.btn_editor(btn, self.scenes_widget.currentIndex(), num))
+					self.preview.append(btn)
+					self.layout.addWidget(btn)
+					num += 1
+				elif self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][i1000][0] == 1: # input
+					inp_lay = QHBoxLayout()
+					inp_lab = QLabel(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][i1000][1])
+					inp = QExtension.ClickableLineEdit()
+					inp.setDisabled(True)
+					inp.setText(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][i1000][2])
+					inp.mousePressEvent = lambda throw_away, scene_id=self.scenes_widget.currentIndex(), num=num, label=inp_lab, inp=inp: self.input_editor(scene_id, num, label, inp)
+					inp_lab.mousePressEvent = lambda throw_away, scene_id=self.scenes_widget.currentIndex(), num=num, label=inp_lab, inp=inp: self.input_editor(scene_id, num, label, inp)
+					self.preview.append(inp_lab)
+					self.preview.append(inp)
+					inp_lay.addWidget(inp_lab)
+					inp_lay.addWidget(inp)
+					self.layout.addLayout(inp_lay)
 			except IndexError:
 				continue
 
@@ -574,10 +603,20 @@ class Editor(QWidget):
 
 		self.setStyleSheet(helper.generate_stylesheet())
 
+	def open_build_menu(self):
+		BuildMenu(self, self.mem_data, self.editor_data).show()
+		self.hide()
+
 	def btn_editor(self, btn, scene_id, btn_id):
 		self.hide()
 
 		dlg = ButtonEditor(self, btn, scene_id, self.mem_data, btn_id, self.editor_data)
+		dlg.exec()
+
+	def input_editor(self, scene_id, id_, lab, inp):
+		self.hide()
+
+		dlg = InputEditor(self, lab, scene_id, self.mem_data, id_, self.editor_data, inp)
 		dlg.exec()
 
 	def txt_editor(self, label, scene_id):
@@ -614,6 +653,12 @@ class Editor(QWidget):
 		self.build_preview()
 		self.show()
 
+	def remove_input(self, id):
+		del self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][id]
+		self.save()
+		self.build_preview()
+		self.show()
+
 	def change_btn_text(self, button: int, update):
 		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][button][0] = update
 		self.save()
@@ -639,6 +684,18 @@ class Editor(QWidget):
 		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["title"] = text
 		self.save()
 
+	def change_input_label(self, input_id: int, text: str):
+		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][input_id][1] = text
+		self.save()
+
+	def change_input_default_value(self, input_id: int, text: str):
+		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"][input_id][2] = text
+		self.save()
+
+	def change_input_note(self, input_id: int, text: str):
+		self.editor_data["scenes"][self.scenes_widget.currentIndex()][input_id]["notes"] = text
+		self.save()
+
 	def back_to_mm(self):
 		w = Creator()
 		w.show()
@@ -655,6 +712,14 @@ class Editor(QWidget):
 
 	def add_button(self):
 		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"].append(["Button", 1])
+		self.editor_data["scenes"][self.scenes_widget.currentIndex()].append({"notes": ""})
+
+		self.save()
+
+		self.build_preview()
+
+	def add_input(self):
+		self.mem_data["scenes"][self.scenes_widget.currentIndex()]["buttons"].append([1, "Input: ", "Default value"])
 		self.editor_data["scenes"][self.scenes_widget.currentIndex()].append({"notes": ""})
 
 		self.save()
@@ -688,6 +753,11 @@ class Editor(QWidget):
 		except IndexError as err:
 			print(
 				f"An error occurred. \n\nPlease report this issue on Github\nMore info: \"[IndexError] {err} --- tried remove_scene(self)")
+
+	def closeEvent(self, event):
+		self.save()
+		self.hide()
+		Creator().show()
 
 
 class SettingsWindow(QTabWidget):
@@ -828,7 +898,7 @@ class SettingsWindow(QTabWidget):
 		self.selected_icon.setCurrentIndex(settings["icon"][0])
 		self.selected_icon.currentIndexChanged.connect(lambda: self.save())
 
-		needs_to_update_label = QLabel("Restart CrystalStudio to see change")
+		credit = QLabel("Restart CrystalStudio to see change\nBig thank you to VlogFox for making these good looking new icons")
 
 		self.preview_icon = QLabel()
 		self.preview_icon.setPixmap(QPixmap("crys/storage/icon/" + settings["icon"][1] + ".png"))
@@ -838,7 +908,7 @@ class SettingsWindow(QTabWidget):
 
 		layout1.addWidget(label)
 		layout1.addWidget(self.selected_icon)
-		layout1.addWidget(needs_to_update_label)
+		layout2.addWidget(credit)
 		layout3.addWidget(self.preview_icon)
 
 		layout.addLayout(layout1)
@@ -924,6 +994,8 @@ class SettingsWindow(QTabWidget):
 		self.preview_icon.setFixedSize(int(128 * self.settings["ui_scale"][1]), int(128 * self.settings["ui_scale"][1]))
 		self.preview_icon.setPixmap(QPixmap("crys/storage/icon/" + settings["icon"][1] + ".png"))
 
+	def closeEvent(self, event):
+		self.exit()
 
 class ButtonEditor(QDialog):
 	def __init__(self, parent, btn: QPushButton, scene_id, memory, btn_id, editor):
@@ -934,6 +1006,7 @@ class ButtonEditor(QDialog):
 		buttons = []
 
 		self.settings = helper.get_settings()
+		self.w = None
 
 		self.editor = editor
 		self.mem = memory
@@ -1048,10 +1121,107 @@ class ButtonEditor(QDialog):
 			   self.mem["info"]["out"]).show()
 
 	def cancel(self):
+		if self.w is None:
+			self.w = Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]), self.mem["info"]["out"])
+		self.w.show()
+
+		self.hide()
+
+	def closeEvent(self, event):
+		self.cancel()
+
+class InputEditor(QDialog):
+	def __init__(self, parent, label: QLabel, scene_id, memory, id, editor, inp: QLineEdit):
+		super().__init__(parent)
+		self.settings = helper.get_settings()
+
+		self.editor = editor
+		self.mem = memory
+		self.scene_id = scene_id
+		self.id = id
+		self.label = label
+		self.input = inp
+
+		self.setWindowTitle(f"Editing input field {self.id} in scene {self.scene_id}")
+
+		self.layout = QVBoxLayout()
+		self.layout1 = QHBoxLayout()
+		self.layout2 = QHBoxLayout()
+		self.layout3 = QHBoxLayout()
+		self.layout4 = QVBoxLayout()
+		self.layout5 = QHBoxLayout()
+		message1 = QLabel("Label text:")
+		self.label_text = QLineEdit()
+		self.label_text.setText(self.label.text())
+
+		message2 = QLabel("Input field default value:")
+		self.input_field_default_value = QLineEdit(self.input.text())
+
+		message3 = QLabel("Notes:")
+		self.notes = QTextEdit()
+		self.notes.setText(editor["scenes"][self.scene_id][self.id]["notes"])
+
+		remove_btn = QPushButton("Remove")
+		remove_btn.clicked.connect(lambda: self.remove_btn_clicked())
+		cancel = QPushButton("Cancel")
+		cancel.clicked.connect(lambda: self.cancel())
+		save = QPushButton("Save")
+		save.clicked.connect(lambda: self.save_btn_clicked())
+
+		self.layout1.addWidget(message1)
+		self.layout1.addWidget(self.label_text)
+		self.layout2.addWidget(message2)
+		self.layout2.addWidget(self.input_field_default_value)
+		self.layout4.addWidget(message3)
+		self.layout4.addWidget(self.notes)
+		self.layout5.addWidget(remove_btn)
+		self.layout5.addWidget(cancel)
+		self.layout5.addWidget(save)
+
+		self.layout.addLayout(self.layout1)
+		self.layout.addLayout(self.layout2)
+		self.layout.addLayout(self.layout3)
+		self.layout.addLayout(self.layout4)
+		self.layout.addLayout(self.layout5)
+
+		self.setLayout(self.layout)
+
+		self.fix_css()
+
+		self.setFixedSize(int(800 * self.settings["ui_scale"][1]), int(300 * self.settings["ui_scale"][1]))
+
+	def fix_css(self):
+		self.setStyleSheet(helper.generate_stylesheet())
+
+	def update_selector(self):
+		if self.scenes_widget.currentText() == "Script":
+			self.script_function.setEnabled(True)
+		else:
+			self.script_function.setDisabled(True)
+
+	def remove_btn_clicked(self):
+		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]), self.mem["info"]["out"]).remove_input(
+			self.id)
+		self.hide()
+
+	def save_btn_clicked(self):
+		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
+			   self.mem["info"]["out"]).change_input_note(self.id, self.notes.toPlainText())
+		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
+			   self.mem["info"]["out"]).change_input_label(self.id, self.label_text.text())
+		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
+			   self.mem["info"]["out"]).change_input_default_value(self.id, self.input_field_default_value.text())
 		self.hide()
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
 			   self.mem["info"]["out"]).show()
 
+	def cancel(self):
+		self.hide()
+		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
+			   self.mem["info"]["out"]).show()
+
+	def closeEvent(self, event):
+		self.cancel()
 
 class TextEditor(QDialog):
 	def __init__(self, parent, label: QLabel, scene_id, memory, editor):
@@ -1120,6 +1290,9 @@ class TextEditor(QDialog):
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]),
 			   self.mem["info"]["out"]).show()
 
+	def closeEvent(self, event):
+		self.cancel()
+
 
 class BuildMenu(QDialog):
 	def __init__(self, parent, memory, editor):
@@ -1143,7 +1316,7 @@ class BuildMenu(QDialog):
 		message1 = QLabel("Builder type:")
 		self.labels.append(message1)
 		self.builder_type = QComboBox()
-		self.builder_type.insertItem(0, "Web application (JavaScript2, HTML, CSS)")
+		self.builder_type.insertItem(0, "Web application (JavaScript, HTML, CSS)")
 		self.lines.append(self.builder_type)
 
 		cancel = QPushButton("Cancel")
@@ -1183,8 +1356,11 @@ class BuildMenu(QDialog):
 			helper.open_file(f"editor/{self.mem['info']['name']}/{self.mem['info']['out']}")
 
 	def cancel(self):
+		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]), self.mem["info"]["out"]).show()
 		self.hide()
 
+	def closeEvent(self, event):
+		self.cancel()
 
 class UpdateWindow(QDialog):
 	def __init__(self):
