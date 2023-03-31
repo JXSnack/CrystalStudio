@@ -8,6 +8,7 @@ QTextEdit:enabled {color: white; border: 1px solid white;}
 
 QPushButton {color: gray; background-color: lightgray;  border: 3px solid lightgray;}
 QPushButton:hover {background-color: white;}
+QPushButton {color: lightgray; background-color: gray;  border: 3px solid gray;}
 
 QLabel {color: gray; background: transparent;}
 

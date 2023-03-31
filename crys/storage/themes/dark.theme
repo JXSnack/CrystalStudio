@@ -8,6 +8,7 @@ QTextEdit:enabled {color: white; border: 1px solid white;}
 
 QPushButton {color: white; background-color: rgb(51, 51, 51); border: 3px solid rgb(51, 51, 51); border-radius:5px;}
 QPushButton:hover {background-color: rgb(60, 60, 60);}
+QPushButton {color: white; background-color: rgb(41, 41, 41); border: 3px solid rgb(41, 41, 41); border-radius:5px;}
 
 QLabel {color: white; background: transparent;}
 

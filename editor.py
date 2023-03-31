@@ -1037,6 +1037,9 @@ class ButtonEditor(QDialog):
 		for func in MemCheck(self.mem).get_all_functions():
 			self.script_function.addItem(func)
 
+		self.args_btn = QPushButton("Function arguments")
+		self.args_btn.setDisabled(True)
+
 		labels.append(message2)
 		self.scenes_widget = QComboBox(self)
 		self.scenes_widget.addItem(f"Script")
@@ -1046,9 +1049,11 @@ class ButtonEditor(QDialog):
 			self.scenes_widget.setCurrentIndex(0)
 			self.script_function.setCurrentText(self.mem["scenes"][scene_id]["buttons"][btn_id][2])
 			self.script_function.setEnabled(True)
+			self.args_btn.setEnabled(True)
 		else:
 			self.scenes_widget.setCurrentIndex(self.mem["scenes"][scene_id]["buttons"][btn_id][1])
 			self.script_function.setDisabled(True)
+			self.args_btn.setDisabled(True)
 
 		self.scenes_widget.currentIndexChanged.connect(lambda: self.update_selector())
 
@@ -1068,7 +1073,11 @@ class ButtonEditor(QDialog):
 		save.clicked.connect(lambda: self.save_btn_clicked())
 		buttons.append(remove_btn)
 		buttons.append(cancel)
+		buttons.append(self.args_btn)
 		buttons.append(save)
+
+		for button in buttons:
+			button.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
 		self.layout1.addWidget(message1)
 		self.layout1.addWidget(self.btn_text)
@@ -1080,6 +1089,7 @@ class ButtonEditor(QDialog):
 		self.layout4.addWidget(self.notes)
 		self.layout5.addWidget(remove_btn)
 		self.layout5.addWidget(cancel)
+		self.layout5.addWidget(self.args_btn)
 		self.layout5.addWidget(save)
 
 		self.layout.addLayout(self.layout1)
@@ -1100,8 +1110,13 @@ class ButtonEditor(QDialog):
 	def update_selector(self):
 		if self.scenes_widget.currentText() == "Script":
 			self.script_function.setEnabled(True)
+			self.args_btn.setEnabled(True)
 		else:
 			self.script_function.setDisabled(True)
+			self.args_btn.setDisabled(True)
+
+	def open_function_args(self):
+		pass
 
 	def remove_btn_clicked(self):
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]), self.mem["info"]["out"]).remove_btn(
