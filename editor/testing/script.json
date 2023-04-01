@@ -7,7 +7,7 @@
 			"args": {"AddAmount": 1},
 			"execute": [
 				["add", "foo", "AddAmount"],
-				["change", 0, -1, "Foo: {@foo}"]
+				["change", 0, "title", "text", "Foo: {@foo}"]
 			]
 		}
 	},

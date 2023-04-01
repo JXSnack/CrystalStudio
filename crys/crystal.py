@@ -148,7 +148,7 @@ button {
 {cs_funcs}
 
   // CrystalStudio init game
-  var game = {str(self.scenes)}
+  var game = {str(self.scenes).replace("'", '"')}
   var game_running = true
   var current_scene = 0
   
@@ -288,7 +288,7 @@ button {
 			for i998 in range(len(variables)):
 				returned_player = str(returned_player).replace(
 					ScriptValues.VARIABLE_START + variables[i998] + ScriptValues.VARIABLE_END,
-					f"\' + crys_v_{variables[i998]} + \'")
+					f"\" + crys_v_{variables[i998]} + \"")
 
 			player.write(returned_player)
 			player.close()

@@ -495,7 +495,7 @@ class ScriptHandler:
 										else:
 											print(f"ScriptHandler cannot decode: {text}")
 											Error().has_to_be("'text' or 'link'", text[3])
-									elif element_type == 1: # if element type is input field
+									elif int(element_type) == 1: # if element type is input field
 										if text[3] == "label":
 											rv += f"game[{scene_id}][\"buttons\"][{element_id}][1]"
 										elif text[3] == "value":
@@ -503,11 +503,6 @@ class ScriptHandler:
 										else:
 											print(f"ScriptHandler cannot decode: {text}")
 											Error().has_to_be("'label' or 'value'", text[3])
-									elif element_type == -1: # if element type is text
-										if text[3] == "text":
-											rv += f"game[{scene_id}][\"title\"] = \"{text}\""
-										else:
-											Error().has_to_be("'text'", text[3])
 									else:
 										print(f"ScriptHandler cannot decode: {text}")
 										Error().unknown_element_type(element_type, f"'{text}'")
@@ -518,6 +513,11 @@ class ScriptHandler:
 								else:
 									print(f"ScriptHandler cannot decode: {text}")
 									Error().unknown_element_id(element_id)
+							elif text[2] == "title":  # if element type is text
+								if text[3] == "text":
+									rv += f"game[{scene_id}][\"title\"] = \"{text}\""
+								else:
+									Error().has_to_be("'text'", text[3])
 							else:
 								print(f"ScriptHandler cannot decode: {text}")
 								Error().has_to_be(int, type(text[2]))
@@ -542,7 +542,15 @@ class ScriptHandler:
 					if type(text[1]) == int:  # scene
 						scene_id = int(text[1])
 						if len(self.mem["scenes"]) >= scene_id:  # check if the scene could even exist
-							if type(text[2] == int):  # element
+							if text[2] == "title": # element
+								if text[3] == "text":
+									rv += f"game[{scene_id}][\"title\"] = \"{text[4]}\""
+									return rv
+								else:
+									print(f"ScriptHandler cannot decode: {text}")
+									Error().has_to_be("'text'", text[3])
+									return ""
+							elif type(text[2] == int):  # element
 								element_id = int(text[2])
 								if len(self.mem["scenes"][scene_id][
 										   "buttons"]) >= element_id:  # check if the element could even exist
@@ -570,13 +578,6 @@ class ScriptHandler:
 										else:
 											print(f"ScriptHandler cannot decode: {text}")
 											Error().has_to_be("'label' or 'value'", text[3])
-									elif element_type == -1:
-										if text[3] == "text":
-											rv += f"game[{scene_id}][\"title\"] = {text[4]}"
-										else:
-											print(f"ScriptHandler cannot decode: {text}")
-											Error().has_to_be("'text'", text[3])
-											return ""
 									else:
 										Error().unknown_element_type(element_type, f"'{text}'")
 								else:
