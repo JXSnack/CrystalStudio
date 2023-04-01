@@ -1,4 +1,5 @@
 import json
+import string
 import sys
 
 
@@ -110,7 +111,7 @@ class Script:
 			for un_code in func_exec:
 				code = ScriptHandler(self.lang, self.mem).decode(un_code)
 				for arg2 in args:
-					code = code.replace(f"arg:{arg2}", f"\" + crys_f_arg_{arg2} + \"")
+					code = code.replace("{" + f"arg:{arg2}" + "}", f"\" + crys_f_arg_{arg2} + \"")
 				rv += f"\t\t{code}\n"
 
 			rv += "\t}\n\n"
@@ -251,7 +252,7 @@ class ScriptHandler:
 			if self.lang == BuilderType.JavaScript:
 				try:
 					if type(text[1]) == str:
-						go_to = f"crys_v_{text[1]}"
+						go_to = f"crys_v_{text[1]}".replace("\"", "").replace(" + ", "")
 						rv += f"updateScene({go_to} - 1);"
 					else:
 						go_to = text[1]
@@ -277,8 +278,10 @@ class ScriptHandler:
 		elif text[0] == "add":  # add command (plus)
 			if self.lang == BuilderType.JavaScript:
 				try:
-					if type(text[2]) == str:
-						num2 = f"crys_v_{text[1]}"
+					if type(text[2]) == str and text[2][0] in string.ascii_uppercase:
+						num2 = f"crys_f_arg_{text[2]}"
+					elif type(text[2]) == str:
+						num2 = f"crys_v_{text[2]}"
 					else:
 						num2 = text[2]
 
@@ -298,10 +301,10 @@ class ScriptHandler:
 		elif text[0] == "set": # set command
 			if self.lang == BuilderType.JavaScript:
 				try:
-					if type(text[1] == str):
+					if type(text[2]) == str:
 						rv += f"crys_v_{text[1]} = \"{text[2]}\""
 					else:
-						rv += f"crys_v_{text[1]} = {str(text[2]).lower()}" # lower for boolean stuff
+						rv += f"crys_v_{text[1]} = {str(text[2])}"
 
 					return rv
 				except IndexError:
@@ -316,8 +319,10 @@ class ScriptHandler:
 		elif text[0] == "remove":  # remove command (minus)
 			if self.lang == BuilderType.JavaScript:
 				try:
-					if type(text[2]) == str:
-						num2 = f"crys_v_{text[1]}"
+					if type(text[2]) == str and text[2][0] in string.ascii_uppercase:
+						num2 = f"crys_f_arg_{text[2]}"
+					elif type(text[2]) == str:
+						num2 = f"crys_v_{text[2]}"
 					else:
 						num2 = text[2]
 
@@ -338,13 +343,15 @@ class ScriptHandler:
 		elif text[0] == "multiply":  # multiply command
 			if self.lang == BuilderType.JavaScript:
 				try:
-					if type(text[2]) == str:
-						num2 = f"crys_v_{text[1]}"
+					if type(text[2]) == str and text[2][0] in string.ascii_uppercase:
+						num2 = f"crys_f_arg_{text[2]}"
+					elif type(text[2]) == str:
+						num2 = f"crys_v_{text[2]}"
 					else:
-						print(f"Error at {text}")
 						num2 = text[2]
 
 					if type(text[1]) != str:
+						print(f"Error at {text}")
 						Error().has_to_be(str, type(text[1]))
 
 					rv += f"crys_v_{text[1]} = crys_v_{text[1]} * {num2};"
@@ -360,8 +367,10 @@ class ScriptHandler:
 		elif text[0] == "divide":  # divide command
 			if self.lang == BuilderType.JavaScript:
 				try:
-					if type(text[2]) == str:
-						num2 = f"crys_v_{text[1]}"
+					if type(text[2]) == str and text[2][0] in string.ascii_uppercase:
+						num2 = f"crys_f_arg_{text[2]}"
+					elif type(text[2]) == str:
+						num2 = f"crys_v_{text[2]}"
 					else:
 						num2 = text[2]
 
@@ -382,7 +391,11 @@ class ScriptHandler:
 		elif text[0] == "function":  # function call
 			if self.lang == BuilderType.JavaScript:
 				try:
-					rv += f"crys_f_{text[1]}();"
+					try:
+						args = ", ".join(text[2])
+						rv += f"crys_f_{text[1]}({args});"
+					except IndexError:
+						rv += f"crys_f_{text[1]}();"
 					return rv
 				except IndexError:
 					print(f"ScriptHandler cannot decode: {text}")
@@ -473,7 +486,7 @@ class ScriptHandler:
 								element_id = int(text[2])
 								if len(self.mem["scenes"][scene_id]["buttons"]) >= element_id: # check if the element could even exist
 									element = self.mem["scenes"][scene_id]["buttons"][element_id]
-									element_type = int(element[0])
+									element_type = element[0]
 									if type(element_type) == str: # if element type is button
 										if text[3] == "text":
 											rv += f"game[{scene_id}][\"buttons\"][{element_id}][0]"
@@ -490,6 +503,11 @@ class ScriptHandler:
 										else:
 											print(f"ScriptHandler cannot decode: {text}")
 											Error().has_to_be("'label' or 'value'", text[3])
+									elif element_type == -1: # if element type is text
+										if text[3] == "text":
+											rv += f"game[{scene_id}][\"title\"] = \"{text}\""
+										else:
+											Error().has_to_be("'text'", text[3])
 									else:
 										print(f"ScriptHandler cannot decode: {text}")
 										Error().unknown_element_type(element_type, f"'{text}'")
@@ -516,6 +534,64 @@ class ScriptHandler:
 				print(f"ScriptHandler cannot decode: {text}")
 				Error().unknown_lang(self.lang)
 				return ""
+
+		elif text[0] == "change":
+			"""["change", <scene>, <element>, "<change something>", "<new value>"]"""
+			try:
+				if self.lang == BuilderType.JavaScript:
+					if type(text[1]) == int:  # scene
+						scene_id = int(text[1])
+						if len(self.mem["scenes"]) >= scene_id:  # check if the scene could even exist
+							if type(text[2] == int):  # element
+								element_id = int(text[2])
+								if len(self.mem["scenes"][scene_id][
+										   "buttons"]) >= element_id:  # check if the element could even exist
+									element = self.mem["scenes"][scene_id]["buttons"][element_id]
+									element_type = element[0]
+
+									if type(element_type) == str:
+										if text[3] == "link":
+											rv += f"game[{scene_id}][{element_id}][1] = {text[4]}"
+											return rv
+										elif text[3] == "text":
+											rv += f"game[{scene_id}][{element_id}][0] = \"{text[4]}\""
+											return rv
+										else:
+											print(f"ScriptHandler cannot decode: {text}")
+											Error().has_to_be("'link' or 'text'", text[3])
+											return ""
+									elif element_type == 1:
+										if text[3] == "label":
+											rv += f"game[{scene_id}][\"buttons\"][{element_id}][1] = \"{text[4]}\""
+											return rv
+										elif text[3] == "value":
+											rv += f"game[{scene_id}][\"buttons\"][{element_id}][2] = \"{text[4]}\""
+											return rv
+										else:
+											print(f"ScriptHandler cannot decode: {text}")
+											Error().has_to_be("'label' or 'value'", text[3])
+									elif element_type == -1:
+										if text[3] == "text":
+											rv += f"game[{scene_id}][\"title\"] = {text[4]}"
+										else:
+											print(f"ScriptHandler cannot decode: {text}")
+											Error().has_to_be("'text'", text[3])
+											return ""
+									else:
+										Error().unknown_element_type(element_type, f"'{text}'")
+								else:
+									Error().unknown_element_id(element_id)
+							else:
+								Error().has_to_be(int, type(text[2]))
+						else:
+							Error().unknown_scene_id(scene_id)
+					else:
+						Error().has_to_be(int, type(text[1]))
+				else:
+					Error().unknown_lang(self.lang)
+			except IndexError:
+				Error().arg_missing("text", 4)
+
 
 		else:
 			Error().unknown_cmd(text)

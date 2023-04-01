@@ -1072,14 +1072,15 @@ class ButtonEditor(QDialog):
 								self.mem["scenes"][self.scene_id]["buttons"][self.btn_id].append([])
 
 						try:
-							value_txt = str(self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3][num])
+							value_txt = self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3][num]
 						except IndexError:
-							value_txt = str(script["functions"][self.mem['scenes'][scene_id]['buttons'][btn_id][2]]['args'][arg2])
+							value_txt = script["functions"][self.mem['scenes'][scene_id]['buttons'][btn_id][2]]['args'][arg2]
 
 						values.append(value_txt)
 
 						self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3].append(values[num])
 						num += 1
+						json.dump(self.mem, open(f"editor/{self.mem['info']['name']}/save.json", "w"))
 
 		else:
 			self.scenes_widget.setCurrentIndex(self.mem["scenes"][scene_id]["buttons"][btn_id][1])
@@ -1428,10 +1429,12 @@ class FunctionArgsUI(QDialog):
 		self.settings = helper.get_settings()
 
 		self.editor = editor
-		self.mem = memory
+		self.mem = json.load(open(f"editor/{memory['info']['name']}/save.json", "r"))
 		self.btn = btn
 		self.btn_id = btn_id
 		self.scene_id = scene_id
+
+		func = self.mem["scenes"][scene_id]["buttons"][btn_id][2]
 
 		script = open(f"editor/{self.mem['info']['name']}/script.json", "r")
 		script = json.load(script)
@@ -1449,6 +1452,7 @@ class FunctionArgsUI(QDialog):
 			self.args.append(arg)
 
 		self.arg_widgets = []
+		self.arg_type_widgets = []
 		num = 0
 		for arg2 in self.args:
 			new_layout = QHBoxLayout()
@@ -1456,14 +1460,32 @@ class FunctionArgsUI(QDialog):
 
 			result = re.sub(pattern, r' \1', arg2)
 			name = QLabel(result)
+			arg_type = QComboBox()
+			arg_type.addItem("str")
+			arg_type.addItem("int")
+			arg_type.addItem("float   ")
+			print(type(self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3][num]))
+			if type(self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3][num]) == str:
+				arg_type.setCurrentIndex(0)
+			elif type(self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3][num]) == int:
+				arg_type.setCurrentIndex(1)
+			elif type(self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3][num]) == float:
+				arg_type.setCurrentIndex(2)
+			else:
+				arg_type.setCurrentText("Error")
+				arg_type.setDisabled(True)
+
 			try:
-				value_txt = str(self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3][num])
+				value_txt = self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3][num]
 			except IndexError:
-				value_txt = str(self.script["functions"][self.mem['scenes'][scene_id]['buttons'][btn_id][2]]['args'][arg2])
-			value = QLineEdit(value_txt)
+				value_txt = self.script["functions"][self.mem['scenes'][scene_id]['buttons'][btn_id][2]]['args'][arg2]
+
+			value = QLineEdit(str(value_txt))
 			self.arg_widgets.append(value)
+			self.arg_type_widgets.append(arg_type)
 			new_layout.addWidget(name)
 			new_layout.addWidget(value)
+			new_layout.addWidget(arg_type)
 			self.layout2.addLayout(new_layout)
 			num += 1
 
@@ -1478,7 +1500,7 @@ class FunctionArgsUI(QDialog):
 
 		self.setLayout(self.layout)
 
-		self.setFixedSize(int(500 * self.settings["ui_scale"][1]), int(50 * self.settings["ui_scale"][1] * len(self.args) + 20))
+		self.setFixedSize(int(500 * self.settings["ui_scale"][1]), int(50 * self.settings["ui_scale"][1] * len(self.args) + 50))
 
 		self.fix_css()
 
@@ -1495,7 +1517,17 @@ class FunctionArgsUI(QDialog):
 					except IndexError:
 						self.mem["scenes"][self.scene_id]["buttons"][self.btn_id].append([])
 
-				self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3].append(self.arg_widgets[num].text())
+				if self.arg_widgets[num].text().isnumeric():
+					if self.arg_type_widgets[num].currentIndex() == 1:
+						rv = int(self.arg_widgets[num].text())
+					elif self.arg_type_widgets[num].currentIndex() == 2:
+						rv = float(self.arg_widgets[num].text())
+					else:
+						rv = str(self.arg_widgets[num].text())
+				else:
+					rv = str(self.arg_widgets[num].text())
+
+				self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3].append(rv)
 				num += 1
 			mem_file = open(f"editor/{self.mem['info']['name']}/save.json", "w")
 			json.dump(self.mem, mem_file)
@@ -1505,6 +1537,7 @@ class FunctionArgsUI(QDialog):
 		self.hide()
 
 	def closeEvent(self, event):
+		json.dump(self.mem, open(f"editor/{self.mem['info']['name']}/save.json", "w"))
 		self.exit()
 
 class UpdateWindow(QDialog):

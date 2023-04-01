@@ -1,13 +1,13 @@
 {
 	"global_variables": {
-		"input_value": ""
+		"foo": 1
 	},
 	"functions": {
-		"read_stuff": {
-			"args": {"SaveAs": "input_value"},
+		"add_to_foo_with_more_options": {
+			"args": {"AddAmount": 1},
 			"execute": [
-				["get", 0, 2, "value", "input_value"],
-				["log", "arg:SaveAs"]
+				["add", "foo", "AddAmount"],
+				["change", 0, -1, "Foo: {@foo}"]
 			]
 		}
 	},
