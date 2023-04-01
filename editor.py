@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import io
 import sys
@@ -1039,6 +1040,7 @@ class ButtonEditor(QDialog):
 
 		self.args_btn = QPushButton("Function arguments")
 		self.args_btn.setDisabled(True)
+		self.args_btn.clicked.connect(lambda: self.open_function_args())
 
 		labels.append(message2)
 		self.scenes_widget = QComboBox(self)
@@ -1049,7 +1051,36 @@ class ButtonEditor(QDialog):
 			self.scenes_widget.setCurrentIndex(0)
 			self.script_function.setCurrentText(self.mem["scenes"][scene_id]["buttons"][btn_id][2])
 			self.script_function.setEnabled(True)
-			self.args_btn.setEnabled(True)
+			self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][2] = self.script_function.currentText()
+			if self.script_function.currentText() != "":
+				function_ = self.script_function.currentText()
+				script_file = open(f"editor/{self.mem['info']['name']}/script.json", "r")
+				script = json.load(script_file)
+				if script["functions"][function_]["args"] != {}:
+					self.args_btn.setEnabled(True)
+					args = []
+					for arg in script["functions"][function_]["args"]:
+						args.append(arg)
+
+					num = 0
+					values = []
+					for arg2 in args:
+						if num == 0:
+							try:
+								self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3] = []
+							except IndexError:
+								self.mem["scenes"][self.scene_id]["buttons"][self.btn_id].append([])
+
+						try:
+							value_txt = str(self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3][num])
+						except IndexError:
+							value_txt = str(script["functions"][self.mem['scenes'][scene_id]['buttons'][btn_id][2]]['args'][arg2])
+
+						values.append(value_txt)
+
+						self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3].append(values[num])
+						num += 1
+
 		else:
 			self.scenes_widget.setCurrentIndex(self.mem["scenes"][scene_id]["buttons"][btn_id][1])
 			self.script_function.setDisabled(True)
@@ -1110,13 +1141,21 @@ class ButtonEditor(QDialog):
 	def update_selector(self):
 		if self.scenes_widget.currentText() == "Script":
 			self.script_function.setEnabled(True)
-			self.args_btn.setEnabled(True)
+			function_ = self.script_function.currentText()
+			script_file = open(f"editor/{self.mem['info']['name']}/script.json", "r")
+			script = json.load(script_file)
+			if script["functions"][function_]["args"] != {}:
+				self.args_btn.setEnabled(True)
+			else:
+				self.args_btn.setDisabled(True)
 		else:
 			self.script_function.setDisabled(True)
 			self.args_btn.setDisabled(True)
 
 	def open_function_args(self):
-		pass
+		if self.w is None:
+			self.w = FunctionArgsUI(self, self.mem, self.editor, self.btn, self.btn_id, self.scene_id)
+		self.w.show()
 
 	def remove_btn_clicked(self):
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]), self.mem["info"]["out"]).remove_btn(
@@ -1139,8 +1178,7 @@ class ButtonEditor(QDialog):
 			   self.mem["info"]["out"]).show()
 
 	def cancel(self):
-		if self.w is None:
-			self.w = Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]), self.mem["info"]["out"])
+		self.w = Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]), self.mem["info"]["out"])
 		self.w.show()
 
 		self.hide()
@@ -1210,12 +1248,6 @@ class InputEditor(QDialog):
 
 	def fix_css(self):
 		self.setStyleSheet(helper.generate_stylesheet())
-
-	def update_selector(self):
-		if self.scenes_widget.currentText() == "Script":
-			self.script_function.setEnabled(True)
-		else:
-			self.script_function.setDisabled(True)
 
 	def remove_btn_clicked(self):
 		Editor(self.mem["info"]["name"], ", ".join(self.mem["info"]["authors"]), self.mem["info"]["out"]).remove_input(
@@ -1388,6 +1420,92 @@ class BuildMenu(QDialog):
 
 	def closeEvent(self, event):
 		self.cancel()
+
+class FunctionArgsUI(QDialog):
+	def __init__(self, parent, memory, editor, btn, btn_id, scene_id):
+		super().__init__(parent)
+
+		self.settings = helper.get_settings()
+
+		self.editor = editor
+		self.mem = memory
+		self.btn = btn
+		self.btn_id = btn_id
+		self.scene_id = scene_id
+
+		script = open(f"editor/{self.mem['info']['name']}/script.json", "r")
+		script = json.load(script)
+		self.script = script
+
+		self.setWindowTitle(f"Function arguments for {self.mem['scenes'][scene_id]['buttons'][btn_id][2]}")
+
+		self.layout = QVBoxLayout()
+		self.layout1 = QHBoxLayout()
+		self.layout2 = QVBoxLayout()
+		self.layout3 = QHBoxLayout()
+
+		self.args = []
+		for arg in self.script["functions"][self.mem['scenes'][scene_id]['buttons'][btn_id][2]]['args']:
+			self.args.append(arg)
+
+		self.arg_widgets = []
+		num = 0
+		for arg2 in self.args:
+			new_layout = QHBoxLayout()
+			pattern = r"([A-Z])"
+
+			result = re.sub(pattern, r' \1', arg2)
+			name = QLabel(result)
+			try:
+				value_txt = str(self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3][num])
+			except IndexError:
+				value_txt = str(self.script["functions"][self.mem['scenes'][scene_id]['buttons'][btn_id][2]]['args'][arg2])
+			value = QLineEdit(value_txt)
+			self.arg_widgets.append(value)
+			new_layout.addWidget(name)
+			new_layout.addWidget(value)
+			self.layout2.addLayout(new_layout)
+			num += 1
+
+		save = QPushButton("Save && Exit")
+		save.clicked.connect(lambda: self.exit())
+
+		self.layout3.addWidget(save)
+
+		self.layout.addLayout(self.layout1)
+		self.layout.addLayout(self.layout2)
+		self.layout.addLayout(self.layout3)
+
+		self.setLayout(self.layout)
+
+		self.setFixedSize(int(500 * self.settings["ui_scale"][1]), int(50 * self.settings["ui_scale"][1] * len(self.args) + 20))
+
+		self.fix_css()
+
+	def fix_css(self):
+		self.setStyleSheet(helper.generate_stylesheet())
+
+	def exit(self):
+		try:
+			num = 0
+			for arg in self.args:
+				if num == 0:
+					try:
+						self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3] = []
+					except IndexError:
+						self.mem["scenes"][self.scene_id]["buttons"][self.btn_id].append([])
+
+				self.mem["scenes"][self.scene_id]["buttons"][self.btn_id][3].append(self.arg_widgets[num].text())
+				num += 1
+			mem_file = open(f"editor/{self.mem['info']['name']}/save.json", "w")
+			json.dump(self.mem, mem_file)
+		except Exception as err:
+			print(f"Critical error while trying to save save.json. Please report this issue on GitHub!\n{err}")
+			sys.exit(0)
+		self.hide()
+
+	def closeEvent(self, event):
+		self.exit()
 
 class UpdateWindow(QDialog):
 	def __init__(self):

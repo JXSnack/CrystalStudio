@@ -35,13 +35,22 @@ class Script:
 	def make_function_handler(self, functions: list):
 		rv = ""
 		if self.lang == BuilderType.JavaScript:
-			rv += "function handleCrystalFunction(function_name) {\n"
+			rv += "function handleCrystalFunction(function_name, coming_from_button = null) {\n"
 
 			if functions != []:
 				func2 = functions[0]
 				rv += f"\t\t\t\tif (function_name === \"{func2}\") " + "{\n"
-				rv += f"\t\t\t\t\tcrys_f_{func2}();\n"
-				rv += "\t\t\t\t} "
+				rv += f"\t\t\t\t\tif (coming_from_button === null) " + "{ " + f"crys_f_{func2}();" + " \n} else {\n" + f"crys_f_{func2}("
+				num = 0
+				for arg in self.script["functions"][functions[0]]["args"]:
+					rv += f"game[current_scene][\"buttons\"][coming_from_button][3][{num}], "
+					num += 1
+
+				rv = rv[:-1]
+				rv = rv[:-1]
+				rv += ")"
+
+				rv += "\t\t\t\t} }"
 				functions.pop(0)
 			else:
 				rv += "// No functions\n"
@@ -70,12 +79,29 @@ class Script:
 		return rv
 
 	def make_func(self, func):
-		func_exec = self.script["functions"][func]
+		func_exec = self.script["functions"][func]["execute"]
+		args = []
+		for arg in self.script["functions"][func]["args"]:
+			args.append(arg)
+
+		args_formatted = ""
+
+		for un_arg in args:
+			if type(self.script['functions'][func]['args'][un_arg]) != str:
+				args_formatted += f"crys_f_arg_{un_arg} = {self.script['functions'][func]['args'][un_arg]}, "
+			else:
+				args_formatted += f"crys_f_arg_{un_arg} = \"{self.script['functions'][func]['args'][un_arg]}\", "
+
+		args_formatted = args_formatted[:-1]
+		args_formatted = args_formatted[:-1]
+
 		if self.lang == BuilderType.JavaScript:
 			rv = ""
-			rv += f"\tfunction crys_f_{func}() " + "{\n"
+			rv += f"\tfunction crys_f_{func}({args_formatted}) " + "{\n"
 			for un_code in func_exec:
 				code = ScriptHandler(self.lang, self.mem).decode(un_code)
+				for arg2 in args:
+					code = code.replace(f"arg:{arg2}", f"\" + crys_f_arg_{arg2} + \"")
 				rv += f"\t\t{code}\n"
 
 			rv += "\t}\n\n"
@@ -418,7 +444,7 @@ class ScriptHandler:
 		elif text[0] == "log":  # log function
 			if self.lang == BuilderType.JavaScript:
 				try:
-					rv += f"console.log(crys_v_{text[1]})"
+					rv += f"console.log(\"{text[1]}\")"
 					return rv
 				except IndexError:
 					print(f"ScriptHandler cannot decode: {text}")

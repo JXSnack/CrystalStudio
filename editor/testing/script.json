@@ -3,11 +3,13 @@
 		"input_value": ""
 	},
 	"functions": {
-		"read_stuff": [
-			["get", 0, 2, "value", "input_value"],
-			["log", "input_value"]
-		]
-
+		"read_stuff": {
+			"args": {},
+			"execute": [
+				["get", 0, 2, "value", "input_value"],
+				["log", "arg:SaveAs"]
+			]
+		}
 	},
 	"checks": {
 

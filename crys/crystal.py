@@ -185,7 +185,7 @@ button {
 	  }
       createMainMenuButton("Back to main menu")
     } else if (game[current_scene]["buttons"][coming_from_button][1] === "script") {
-      handleCrystalFunction(game[current_scene]["buttons"][coming_from_button][2]);
+      handleCrystalFunction(game[current_scene]["buttons"][coming_from_button][2], coming_from_button);
     } else if (coming_from_button !== null) {
       if (game[current_scene]["buttons"][coming_from_button][1] !== "script") {
         current_scene = scene;
