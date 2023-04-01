@@ -56,9 +56,18 @@ class Script:
 				rv += "// No functions\n"
 
 			for func in functions:
-				rv += f"else if (function_name === \"{func}\") " + "{\n"
-				rv += f"\t\t\t\t\tcrys_f_{func}();\n"
-				rv += "\t\t\t\t} "
+				rv += f"\t\t\t\tif (function_name === \"{func}\") " + "{\n"
+				rv += f"\t\t\t\t\tif (coming_from_button === null) " + "{ " + f"crys_f_{func}();" + " \n} else {\n" + f"crys_f_{func}("
+				num = 0
+				for arg in self.script["functions"][functions[0]]["args"]:
+					rv += f"game[current_scene][\"buttons\"][coming_from_button][3][{num}], "
+					num += 1
+
+				rv = rv[:-1]
+				rv = rv[:-1]
+				rv += ")"
+
+				rv += "\t\t\t\t} }"
 
 			if functions != []:
 				rv += "else { alert(\"ERROR: Cannot 'handleCrystalFunction': \" + function_name + \". Please contact the creator of this game and report this issue on the CrystalStudio GitHub page (github.com/JXSnack/CrystalStudio/issues)\"); \n\t\t\t\t}\n\t\t\t}\n"

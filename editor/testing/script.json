@@ -4,7 +4,7 @@
 	},
 	"functions": {
 		"read_stuff": {
-			"args": {},
+			"args": {"SaveAs": "input_value"},
 			"execute": [
 				["get", 0, 2, "value", "input_value"],
 				["log", "arg:SaveAs"]
