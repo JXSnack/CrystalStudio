@@ -13,12 +13,12 @@ try:
 	from PyQt6.QtWidgets import *
 
 	from crys import QExtension
+	from crys.script import MemCheck
+	import crys.crystal
 
 	import requests
-except ImportError:
-	import crys.crystal
+except (ImportError, ModuleNotFoundError):
 	import crys.helper as helper
-	from crys.script import MemCheck
 
 	helper.install_requirements()
 	print("\nPlease start the editor again! If it said something with the Microsoft store, please do these three commands in the PyCharm command line:\npip install --upgrade pip\npip install PyQt6\npip install requests")
