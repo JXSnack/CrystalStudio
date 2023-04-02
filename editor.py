@@ -594,6 +594,7 @@ class Editor(QWidget):
 					inp_lay.addWidget(inp_lab)
 					inp_lay.addWidget(inp)
 					self.layout.addLayout(inp_lay)
+					num += 1
 			except IndexError:
 				continue
 
