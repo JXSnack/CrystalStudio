@@ -49,7 +49,7 @@ class Creator(QMainWindow):
 		self.pic.setPixmap(QPixmap("crys/storage/icon/" + settings["icon"][1] + ".png"))
 		self.pic.setScaledContents(True)
 		self.pic.setGeometry(int(10 * self.settings["ui_scale"][1]), int(1 * self.settings["ui_scale"][1]),
-							 int(64 * self.settings["text_scale"][1]), int(64 * self.settings["text_scale"][1]))
+							 int(64 * self.settings["ui_scale"][1]), int(64 * self.settings["ui_scale"][1]))
 
 		self.anl = QLabel(self)  # anl means app_name_label
 		self.anl.move(int(76 * self.settings["ui_scale"][1]), int(10 * self.settings["ui_scale"][1]))
@@ -62,7 +62,7 @@ class Creator(QMainWindow):
 		self.avl.adjustSize()
 		self.avl.move(int(76 * self.settings["ui_scale"][1]), int(31 * self.settings["ui_scale"][1]))
 		self.avl.setStyleSheet(helper.generate_stylesheet() + " QLabel {color: gray; font-size: " + str(
-			int(12 * self.settings["text_scale"][1])) + "px;}")
+			int(12 * self.settings["ui_scale"][1])) + "px;}")
 		self.avl.adjustSize()
 
 		new_project = QPushButton("New project", self)
@@ -928,7 +928,6 @@ class SettingsWindow(QTabWidget):
 		if not self.selector1.currentText().lower().startswith("custom"):
 			self.settings["ui_scale"] = [self.selector1.currentIndex(),
 										 float(self.selector1.currentText().split()[0].lower())]
-			self.settings["text_scale"] = self.settings["ui_scale"]
 			self.custom_size_wid.setDisabled(True)
 		else:
 			self.custom_size_wid.setEnabled(True)
@@ -939,7 +938,6 @@ class SettingsWindow(QTabWidget):
 					if 3 > float(self.custom_size_wid.text()):
 						self.settings["ui_scale"] = [self.selector1.currentIndex(),
 													 float(self.custom_size)]
-						self.settings["text_scale"] = self.settings["ui_scale"]
 				elif self.custom_size_wid.text().startswith("0"):
 					splitted = self.custom_size_wid.text().split(".")
 					if splitted[0] is not None:
@@ -953,7 +951,6 @@ class SettingsWindow(QTabWidget):
 
 											self.settings["ui_scale"] = [self.selector1.currentIndex(),
 																		 float(self.custom_size)]
-											self.settings["text_scale"] = self.settings["ui_scale"]
 						elif splitted[0].startswith("0"):
 							try:
 								if splitted[0].isnumeric():
@@ -966,7 +963,6 @@ class SettingsWindow(QTabWidget):
 
 													self.settings["ui_scale"] = [self.selector1.currentIndex(),
 																				 float(self.custom_size)]
-													self.settings["text_scale"] = self.settings["ui_scale"]
 							except IndexError:
 								pass
 			else:
