@@ -43,7 +43,7 @@ def get_settings() -> dict:
 		settings = json.load(settings_file)
 	except json.decoder.JSONDecodeError:
 		file = open(settings_filepath(), "w")
-		json.dump({"ui_scale": [1, 1.0], "text_scale": [1, 1.0], "theme": [1, "dark"], "custom_theme": "",
+		json.dump({"ui_scale": [1, 1.0], "theme": [1, "dark"], "custom_theme": "",
 				   "bookmarked_projects": [], "icon": [0, "new_icon"]}, file)
 		file.close()
 		settings_file2 = open(settings_filepath(), "r")
@@ -63,13 +63,13 @@ def generate_stylesheet() -> str:
 	rv = rv.split("*** CUSTOM THEME SETTINGS BELOW ***")
 	rv = rv[0]
 	rv += " " + custom_theme
-	rv += " QTabBar::tab {font-size: " + str(int(16 * settings["text_scale"][1])) + "px;}"
-	rv += " QLabel {font-size: " + str(int(16 * settings["text_scale"][1])) + "px;}"
-	rv += " QComboBox {font-size: " + str(int(16 * settings["text_scale"][1])) + "px;}"
-	rv += " QComboBox {font-size: " + str(int(16 * settings["text_scale"][1])) + "px;}"
-	rv += " QLineEdit {font-size: " + str(int(14 * settings["text_scale"][1])) + "px;}"
-	rv += " QPushButton {font-size: " + str(int(16 * settings["text_scale"][1])) + "px;}"
-	rv += " QTextEdit {font-size: " + str(int(14 * settings["text_scale"][1])) + "px;}"
+	rv += " QTabBar::tab {font-size: " + str(int(16 * settings["ui_scale"][1])) + "px;}"
+	rv += " QLabel {font-size: " + str(int(16 * settings["ui_scale"][1])) + "px;}"
+	rv += " QComboBox {font-size: " + str(int(16 * settings["ui_scale"][1])) + "px;}"
+	rv += " QComboBox {font-size: " + str(int(16 * settings["ui_scale"][1])) + "px;}"
+	rv += " QLineEdit {font-size: " + str(int(14 * settings["ui_scale"][1])) + "px;}"
+	rv += " QPushButton {font-size: " + str(int(16 * settings["ui_scale"][1])) + "px;}"
+	rv += " QTextEdit {font-size: " + str(int(14 * settings["ui_scale"][1])) + "px;}"
 
 	return rv
 
