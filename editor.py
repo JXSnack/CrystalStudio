@@ -1145,10 +1145,11 @@ class ButtonEditor(QDialog):
 			function_ = self.script_function.currentText()
 			script_file = open(f"editor/{self.mem['info']['name']}/script.json", "r")
 			script = json.load(script_file)
-			if script["functions"][function_]["args"] != {}:
-				self.args_btn.setEnabled(True)
-			else:
-				self.args_btn.setDisabled(True)
+			if script["functions"] != {}:
+				if script["functions"][function_]["args"] != {}:
+					self.args_btn.setEnabled(True)
+				else:
+					self.args_btn.setDisabled(True)
 		else:
 			self.script_function.setDisabled(True)
 			self.args_btn.setDisabled(True)
