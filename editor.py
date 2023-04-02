@@ -48,11 +48,11 @@ class Creator(QMainWindow):
 		self.pic = QLabel(self)
 		self.pic.setPixmap(QPixmap("crys/storage/icon/" + settings["icon"][1] + ".png"))
 		self.pic.setScaledContents(True)
-		self.pic.setGeometry(int(10 * self.settings["ui_scale"][1]), int(1 * self.settings["ui_scale"][1]),
-							 int(64 * self.settings["ui_scale"][1]), int(64 * self.settings["ui_scale"][1]))
+		self.pic.setGeometry(helper.get_scaled_size(10), helper.get_scaled_size(1),
+							 helper.get_scaled_size(64), helper.get_scaled_size(64))
 
 		self.anl = QLabel(self)  # anl means app_name_label
-		self.anl.move(int(76 * self.settings["ui_scale"][1]), int(10 * self.settings["ui_scale"][1]))
+		self.anl.move(helper.get_scaled_size(76), helper.get_scaled_size(10))
 		self.anl.setText("CrystalStudio")
 		self.anl.setStyleSheet(helper.generate_stylesheet())
 		self.anl.adjustSize()
@@ -60,15 +60,15 @@ class Creator(QMainWindow):
 		self.avl = QLabel(self)  # avl means app_version_label
 		self.avl.setText(helper.version)
 		self.avl.adjustSize()
-		self.avl.move(int(76 * self.settings["ui_scale"][1]), int(31 * self.settings["ui_scale"][1]))
+		self.avl.move(helper.get_scaled_size(76), helper.get_scaled_size(31))
 		self.avl.setStyleSheet(helper.generate_stylesheet() + " QLabel {color: gray; font-size: " + str(
-			int(12 * self.settings["ui_scale"][1])) + "px;}")
+			helper.get_scaled_size(12)) + "px;}")
 		self.avl.adjustSize()
 
 		new_project = QPushButton("New project", self)
 		new_project.clicked.connect(self.new_project_fnc)
 		new_project.setToolTip("Create a new project")
-		new_project.move(int(25 * self.settings["ui_scale"][1]), int(80 * self.settings["ui_scale"][1]))
+		new_project.move(helper.get_scaled_size(25), helper.get_scaled_size(80))
 
 		self.pointed.append(new_project)
 		self.adjusted.append(new_project)
@@ -76,29 +76,29 @@ class Creator(QMainWindow):
 		open_project = QPushButton("Open Project", self)
 		open_project.setToolTip("Open a saved project")
 		open_project.clicked.connect(self.open_project_fnc)
-		open_project.move(int(25 * self.settings["ui_scale"][1]), int(110 * self.settings["ui_scale"][1]))
+		open_project.move(helper.get_scaled_size(25), helper.get_scaled_size(110))
 		self.pointed.append(open_project)
 		self.adjusted.append(open_project)
 
 		setting_btn = QPushButton("Settings", self)
 		setting_btn.setToolTip("Open settings")
 		setting_btn.clicked.connect(lambda: self.open_settings())
-		setting_btn.move(int(25 * self.settings["ui_scale"][1]), int(140 * self.settings["ui_scale"][1]))
+		setting_btn.move(helper.get_scaled_size(25), helper.get_scaled_size(140))
 		self.pointed.append(setting_btn)
 		self.adjusted.append(setting_btn)
 
 		add_bookmark_btn = QPushButton("+", self)
 		add_bookmark_btn.setToolTip("Add a bookmark to the bookmark list")
 		add_bookmark_btn.clicked.connect(lambda: self.open_bookmarks())
-		add_bookmark_btn.move(int(900 * self.settings["ui_scale"][1]), int(80 * self.settings["ui_scale"][1]))
+		add_bookmark_btn.move(helper.get_scaled_size(900), helper.get_scaled_size(80))
 		add_bookmark_btn.adjustSize()
-		add_bookmark_btn.setFixedSize(int(40 * self.settings["ui_scale"][1]), int(40 * self.settings["ui_scale"][1]))
+		add_bookmark_btn.setFixedSize(helper.get_scaled_size(40), helper.get_scaled_size(40))
 		add_bookmark_btn.setStyleSheet(helper.generate_extra_style()["bookmark-projects-add"])
 		self.pointed.append(add_bookmark_btn)
 
 		self.setStatusBar(QStatusBar(self))
 
-		self.setFixedSize(int(960 * self.settings["ui_scale"][1]), int(540 * self.settings["ui_scale"][1]))
+		self.setFixedSize(helper.get_scaled_size(960), helper.get_scaled_size(540))
 
 		self.fix_css()
 		self.build_bookmark_projects()
@@ -111,8 +111,8 @@ class Creator(QMainWindow):
 
 	def build_bookmark_projects(self):
 		background = QLabel(self)
-		background.move(int(280 * self.settings["ui_scale"][1]), int(80 * self.settings["ui_scale"][1]))
-		background.setFixedSize(int(600 * self.settings["ui_scale"][1]), int(370 * self.settings["ui_scale"][1]))
+		background.move(helper.get_scaled_size(280), helper.get_scaled_size(80))
+		background.setFixedSize(helper.get_scaled_size(600), helper.get_scaled_size(370))
 		background.setStyleSheet(helper.generate_extra_style()["bookmark-projects-background"])
 
 		num = 1
@@ -125,26 +125,26 @@ class Creator(QMainWindow):
 				label.setText(project)
 				label.adjustSize()
 				label.setStyleSheet(helper.generate_extra_style()["bookmark-projects-name"])
-				label.move(int(295 * self.settings["ui_scale"][1]),
+				label.move(helper.get_scaled_size(295),
 						   int(60 * self.settings["ui_scale"][1] + (num * 35 * self.settings["ui_scale"][1])))
 
 				open_btn = QPushButton(self)
 				open_btn.setToolTip("Open the project")
 				open_btn.setText("Open")
-				open_btn.move(int(730 * self.settings["ui_scale"][1]),
+				open_btn.move(helper.get_scaled_size(730),
 							  int(60 * self.settings["ui_scale"][1] + (num * 35 * self.settings["ui_scale"][1])))
 				open_btn.adjustSize()
-				open_btn.setFixedSize(int(85 * self.settings["ui_scale"][1]), int(30 * self.settings["ui_scale"][1]))
+				open_btn.setFixedSize(helper.get_scaled_size(85), helper.get_scaled_size(30))
 				open_btn.clicked.connect(lambda throw_away, label=label: self.open_project_from_bookmark(label))
 
 				remove_btn = QPushButton(self)
 				remove_btn.setToolTip("Remove project from bookmarks")
 				remove_btn.setText("X")
-				remove_btn.move(int(830 * self.settings["ui_scale"][1]),
+				remove_btn.move(helper.get_scaled_size(830),
 								int(60 * self.settings["ui_scale"][1] + (num * 35 * self.settings["ui_scale"][1])))
 				remove_btn.setStyleSheet(helper.generate_extra_style()["bookmark-projects-rm"])
 				remove_btn.adjustSize()
-				remove_btn.setFixedSize(int(30 * self.settings["ui_scale"][1]), int(30 * self.settings["ui_scale"][1]))
+				remove_btn.setFixedSize(helper.get_scaled_size(30), helper.get_scaled_size(30))
 				remove_btn.clicked.connect(lambda throw_away, num=num: self.bookmark_remove(num))
 
 				self.pointed.append(open_btn)
@@ -205,7 +205,7 @@ class Creator(QMainWindow):
 		input_out.setText("out/")
 		input_out.setDisabled(True)
 		checkbox = QCheckBox(self.np_dlg)
-		# checkbox.check(int(20 * self.settings["ui_scale"][1]), int(20 * self.settings["ui_scale"][1]))
+		# checkbox.check(helper.get_scaled_size(20), helper.get_scaled_size(20))
 
 		btn = QPushButton(self.np_dlg)
 		btn.setText("Create project")
@@ -229,7 +229,7 @@ class Creator(QMainWindow):
 
 		self.np_dlg.setLayout(layout)
 
-		self.np_dlg.setFixedSize(int(480 * self.settings["ui_scale"][1]), int(270 * self.settings["ui_scale"][1]))
+		self.np_dlg.setFixedSize(helper.get_scaled_size(480), helper.get_scaled_size(270))
 
 		checkbox.toggled.connect(input_out.setEnabled)
 		self.fix_css()
@@ -310,7 +310,7 @@ class BookmarkRemoveDialog(QMessageBox):
 			self.save()
 			qm.hide()
 
-		qm.setGeometry(500, 500, int(200 * self.settings["ui_scale"][1]), int(100 * self.settings["ui_scale"][1]))
+		qm.setGeometry(500, 500, helper.get_scaled_size(200), helper.get_scaled_size(100))
 
 		# self.show()
 		Creator().show()
@@ -361,7 +361,7 @@ class BookmarksDialog(QDialog):
 
 		self.setLayout(self.layout)
 
-		self.setFixedSize(int(800 * self.settings["ui_scale"][1]), int(300 * self.settings["ui_scale"][1]))
+		self.setFixedSize(helper.get_scaled_size(800), helper.get_scaled_size(300))
 
 		self.fix_css()
 
@@ -462,12 +462,12 @@ class Editor(QWidget):
 		self.fix_css()
 
 		self.layout = QVBoxLayout(self)
-		self.layout.setContentsMargins(int(200 * self.settings["ui_scale"][1]), int(200 * self.settings["ui_scale"][1]),
-									   int(200 * self.settings["ui_scale"][1]), int(200 * self.settings["ui_scale"][1]))
+		self.layout.setContentsMargins(helper.get_scaled_size(200), helper.get_scaled_size(200),
+									   helper.get_scaled_size(200), helper.get_scaled_size(200))
 
 		self.setLayout(self.layout)
 
-		self.setFixedSize(int(1920 * self.settings["ui_scale"][1]), int(1080 * self.settings["ui_scale"][1]))
+		self.setFixedSize(helper.get_scaled_size(1920), helper.get_scaled_size(1080))
 		self.setWindowTitle("CrystalStudio - " + self.name)
 
 		add_scene_btn = QPushButton(self)
@@ -521,35 +521,35 @@ class Editor(QWidget):
 
 		self.scenes_widget.setCurrentIndex(self.editor_data["current_scene"])
 
-		name.move(int(10 * self.settings["ui_scale"][1]), int(5 * self.settings["ui_scale"][1]))
-		authors.move(int(10 * self.settings["ui_scale"][1]), int(29 * self.settings["ui_scale"][1]))
-		self.scenes_widget.move(int(1780 * self.settings["ui_scale"][1]), int(10 * self.settings["ui_scale"][1]))
-		self.scenes_widget.setFixedSize(int(130 * self.settings["ui_scale"][1]), int(40 * self.settings["ui_scale"][1]))
-		add_scene_btn.move(int(1877 * self.settings["ui_scale"][1]), int(60 * self.settings["ui_scale"][1]))
+		name.move(helper.get_scaled_size(10), helper.get_scaled_size(5))
+		authors.move(helper.get_scaled_size(10), helper.get_scaled_size(29))
+		self.scenes_widget.move(helper.get_scaled_size(1780), helper.get_scaled_size(10))
+		self.scenes_widget.setFixedSize(helper.get_scaled_size(130), helper.get_scaled_size(40))
+		add_scene_btn.move(helper.get_scaled_size(1877), helper.get_scaled_size(60))
 		add_scene_btn.setStyleSheet(
 			'color: white; background-color: rgb(59, 171, 130); border: 1px solid rgb(59, 171, 130);')
-		add_scene_btn.setFixedSize(int(32 * self.settings["ui_scale"][1]), int(32 * self.settings["ui_scale"][1]))
+		add_scene_btn.setFixedSize(helper.get_scaled_size(32), helper.get_scaled_size(32))
 
-		add_button_btn.move(int(1780 * self.settings["ui_scale"][1]), int(100 * self.settings["ui_scale"][1]))
-		add_button_btn.setFixedSize(int(130 * self.settings["ui_scale"][1]), int(40 * self.settings["ui_scale"][1]))
+		add_button_btn.move(helper.get_scaled_size(1780), helper.get_scaled_size(100))
+		add_button_btn.setFixedSize(helper.get_scaled_size(130), helper.get_scaled_size(40))
 		add_button_btn.setStyleSheet(
 			'color: white; background-color: rgb(59, 171, 130); border: 1px solid rgb(59, 171, 130);')
 
-		add_input_btn.move(int(1780 * self.settings["ui_scale"][1]), int(150 * self.settings["ui_scale"][1]))
-		add_input_btn.setFixedSize(int(130 * self.settings["ui_scale"][1]), int(40 * self.settings["ui_scale"][1]))
+		add_input_btn.move(helper.get_scaled_size(1780), helper.get_scaled_size(150))
+		add_input_btn.setFixedSize(helper.get_scaled_size(130), helper.get_scaled_size(40))
 		add_input_btn.setStyleSheet('color: white; background-color: rgb(59, 171, 130); border: 1px solid rgb(59, 171, 130);')
 
-		remove_scene_btn.move(int(1780 * self.settings["ui_scale"][1]), int(60 * self.settings["ui_scale"][1]))
+		remove_scene_btn.move(helper.get_scaled_size(1780), helper.get_scaled_size(60))
 		remove_scene_btn.setStyleSheet(
 			'color: white; background-color: rgb(179, 0, 0); border: 1px solid rgb(179, 0, 0);')
-		remove_scene_btn.setFixedSize(int(32 * self.settings["ui_scale"][1]), int(32 * self.settings["ui_scale"][1]))
+		remove_scene_btn.setFixedSize(helper.get_scaled_size(32), helper.get_scaled_size(32))
 
-		back_to_mainmenu.move(int(1530 * self.settings["ui_scale"][1]), int(1020 * self.settings["ui_scale"][1]))
-		back_to_mainmenu.setFixedSize(int(200 * self.settings["ui_scale"][1]), int(40 * self.settings["ui_scale"][1]))
-		self.save_btn.move(int(1740 * self.settings["ui_scale"][1]), int(1020 * self.settings["ui_scale"][1]))
-		self.save_btn.setFixedSize(int(60 * self.settings["ui_scale"][1]), int(40 * self.settings["ui_scale"][1]))
-		build_btn.move(int(1810 * self.settings["ui_scale"][1]), int(1020 * self.settings["ui_scale"][1]))
-		build_btn.setFixedSize(int(100 * self.settings["ui_scale"][1]), int(40 * self.settings["ui_scale"][1]))
+		back_to_mainmenu.move(helper.get_scaled_size(1530), helper.get_scaled_size(1020))
+		back_to_mainmenu.setFixedSize(helper.get_scaled_size(200), helper.get_scaled_size(40))
+		self.save_btn.move(helper.get_scaled_size(1740), helper.get_scaled_size(1020))
+		self.save_btn.setFixedSize(helper.get_scaled_size(60), helper.get_scaled_size(40))
+		build_btn.move(helper.get_scaled_size(1810), helper.get_scaled_size(1020))
+		build_btn.setFixedSize(helper.get_scaled_size(100), helper.get_scaled_size(40))
 
 		back_to_mainmenu.clicked.connect(lambda: self.back_to_mm())
 		self.save_btn.clicked.connect(lambda: self.save())
@@ -566,7 +566,7 @@ class Editor(QWidget):
 
 		# print(self.preview)
 		lab = QLabel(self.mem_data["scenes"][self.scenes_widget.currentIndex()]["title"])
-		lab.setStyleSheet("font-size: " + str(int(32 * self.settings["ui_scale"][1])) + "px;}")
+		lab.setStyleSheet("font-size: " + str(helper.get_scaled_size(32)) + "px;}")
 		lab.adjustSize()
 		self.preview.append(lab)
 		self.layout.addWidget(lab)
@@ -909,8 +909,8 @@ class SettingsWindow(QTabWidget):
 		self.preview_icon = QLabel()
 		self.preview_icon.setPixmap(QPixmap("crys/storage/icon/" + settings["icon"][1] + ".png"))
 		self.preview_icon.setScaledContents(True)
-		self.preview_icon.setFixedSize(int(128 * self.settings["ui_scale"][1]),
-									   int(128 * self.settings["ui_scale"][1])),
+		self.preview_icon.setFixedSize(helper.get_scaled_size(128),
+									   helper.get_scaled_size(128)),
 
 		layout1.addWidget(label)
 		layout1.addWidget(self.selected_icon)
@@ -993,7 +993,7 @@ class SettingsWindow(QTabWidget):
 	def fix_css(self):
 		self.setStyleSheet(helper.generate_stylesheet())
 		self.setFixedSize(int(self.settings["ui_scale"][1] * 540), int(self.settings["ui_scale"][1] * 640))
-		self.preview_icon.setFixedSize(int(128 * self.settings["ui_scale"][1]), int(128 * self.settings["ui_scale"][1]))
+		self.preview_icon.setFixedSize(helper.get_scaled_size(128), helper.get_scaled_size(128))
 		self.preview_icon.setPixmap(QPixmap("crys/storage/icon/" + settings["icon"][1] + ".png"))
 
 	def closeEvent(self, event):
@@ -1132,7 +1132,7 @@ class ButtonEditor(QDialog):
 
 		self.fix_css()
 
-		self.setFixedSize(int(800 * self.settings["ui_scale"][1]), int(300 * self.settings["ui_scale"][1]))
+		self.setFixedSize(helper.get_scaled_size(800), helper.get_scaled_size(300))
 
 	def fix_css(self):
 		self.setStyleSheet(helper.generate_stylesheet())
@@ -1244,7 +1244,7 @@ class InputEditor(QDialog):
 
 		self.fix_css()
 
-		self.setFixedSize(int(800 * self.settings["ui_scale"][1]), int(300 * self.settings["ui_scale"][1]))
+		self.setFixedSize(helper.get_scaled_size(800), helper.get_scaled_size(300))
 
 	def fix_css(self):
 		self.setStyleSheet(helper.generate_stylesheet())
@@ -1321,7 +1321,7 @@ class TextEditor(QDialog):
 
 		self.setLayout(self.layout)
 
-		self.setFixedSize(int(800 * self.settings["ui_scale"][1]), int(300 * self.settings["ui_scale"][1]))
+		self.setFixedSize(helper.get_scaled_size(800), helper.get_scaled_size(300))
 
 		self.fix_css()
 
@@ -1394,7 +1394,7 @@ class BuildMenu(QDialog):
 
 		self.setLayout(self.layout)
 
-		self.setFixedSize(int(800 * self.settings["ui_scale"][1]), int(300 * self.settings["ui_scale"][1]))
+		self.setFixedSize(helper.get_scaled_size(800), helper.get_scaled_size(300))
 
 		self.fix_css()
 
@@ -1499,7 +1499,7 @@ class FunctionArgsUI(QDialog):
 
 		self.setLayout(self.layout)
 
-		self.setFixedSize(int(500 * self.settings["ui_scale"][1]), int(50 * self.settings["ui_scale"][1] * len(self.args) + 50))
+		self.setFixedSize(helper.get_scaled_size(500), int(50 * self.settings["ui_scale"][1] * len(self.args) + 50))
 
 		self.fix_css()
 
