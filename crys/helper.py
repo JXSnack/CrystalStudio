@@ -56,11 +56,7 @@ def get_settings() -> dict:
 
 
 def get_scaled_size(size: int) -> int:
-    # Dirty, but works
-    if not hasattr(get_scaled_size, 'settings'):
-        get_scaled_size.settings = get_settings()
-
-    return int(size * get_scaled_size.settings["ui_scale"][1])
+    return int(size * get_settings()["ui_scale"][1])
 
 
 def generate_stylesheet() -> str:
