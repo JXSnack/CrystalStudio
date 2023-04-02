@@ -301,7 +301,6 @@ class BookmarkRemoveDialog(QMessageBox):
 
 		qm = QMessageBox()
 		qm.setWindowTitle("Are you sure?")
-		qm.setFixedSize(int(200 * self.settings["ui_scale"][1]), int(100 * self.settings["ui_scale"][1]))
 		ret = qm.information(self, 'Are you sure?',
 							 f"Are you sure to delete \"{self.settings['bookmarked_projects'][num - 1]}\"?",
 							 qm.StandardButton.Yes | qm.StandardButton.No, qm.StandardButton.No)
@@ -310,6 +309,8 @@ class BookmarkRemoveDialog(QMessageBox):
 			self.settings['bookmarked_projects'].pop(num - 1)
 			self.save()
 			qm.hide()
+
+		qm.setGeometry(500, 500, int(200 * self.settings["ui_scale"][1]), int(100 * self.settings["ui_scale"][1]))
 
 		# self.show()
 		Creator().show()

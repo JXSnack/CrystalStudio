@@ -12,7 +12,7 @@ except (ImportError, ModuleNotFoundError):
 	print("\nPlease restart CrystalStudio!")
 	sys.exit(0)
 
-version = "1.3.0-SNAPSHOT [public-16]"
+version = "1.3.0-SNAPSHOT [public-17]"
 
 def open_file(path: str) -> None:
 	if platform.system() == "Windows":
