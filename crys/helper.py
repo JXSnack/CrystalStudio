@@ -1,14 +1,18 @@
 import json
 import platform
 import subprocess
+import os
+import sys
 
 try:
 	from crys.crystal import *
 except (ImportError, ModuleNotFoundError):
 	os.system("python3 -m pip install PyQt6")
 	os.system("python3 -m pip install requests")
+	print("\nPlease restart CrystalStudio!")
+	sys.exit(0)
 
-version = "1.3.0-SNAPSHOT [public-15]"
+version = "1.3.0-SNAPSHOT [public-16]"
 
 def open_file(path: str) -> None:
 	if platform.system() == "Windows":
