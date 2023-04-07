@@ -549,17 +549,16 @@ class ScriptHandler:
 									return ""
 							elif type(text[2] == int):  # element
 								element_id = int(text[2])
-								if len(self.mem["scenes"][scene_id][
-										   "buttons"]) >= element_id:  # check if the element could even exist
+								if len(self.mem["scenes"][scene_id]["buttons"]) >= element_id:  # check if the element could even exist
 									element = self.mem["scenes"][scene_id]["buttons"][element_id]
 									element_type = element[0]
 
 									if type(element_type) == str:
 										if text[3] == "link":
-											rv += f"game[{scene_id}][{element_id}][1] = {text[4]}"
+											rv += f"game[{scene_id}][\"buttons\"][{element_id}][1] = {text[4]}"
 											return rv
 										elif text[3] == "text":
-											rv += f"game[{scene_id}][{element_id}][0] = \"{text[4]}\""
+											rv += f"game[{scene_id}][\"buttons\"][{element_id}][0] = \"{text[4]}\""
 											return rv
 										else:
 											print(f"ScriptHandler cannot decode: {text}")
