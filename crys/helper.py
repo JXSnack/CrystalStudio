@@ -56,7 +56,12 @@ def get_settings() -> dict:
 
 
 def get_scaled_size(size: int) -> int:
-	return int(size * get_settings()["ui_scale"][1])
+    # TODO: Remember file date, and reload cache only if file date changes.
+    # if not hasattr(get_scaled_size, 'settings'):
+    #     get_scaled_size.settings = get_settings()  ## Don't cache for now, we read the file over and over
+
+    settings = get_settings()
+    return int(size * settings["ui_scale"][1])
 
 
 def generate_stylesheet() -> str:
